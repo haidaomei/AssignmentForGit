@@ -1,0 +1,43 @@
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+
+    <head>
+        <jsp:include page="header.jsp" />
+    </head>
+
+    <body class="hold-transition sidebar-mini">
+        <div class="wrapper">
+            <jsp:include page="navbar.jsp" />
+            <jsp:include page="sidebar.jsp" />
+            <div class="content-wrapper">
+                <div class="content-header">
+                    <div class="container-fluid">
+                        <h1>销售漏斗</h1>
+                        <p class="text-muted mb-0">观察各销售阶段的商机数量与预期金额</p>
+                    </div>
+                </div>
+                <section class="content">
+                    <div class="container-fluid">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">阶段转化分布</h3>
+                                <div class="btn-group btn-group-sm float-right metric-switch"><button
+                                        class="btn btn-outline-primary active" data-metric="value">按商机数量</button><button
+                                        class="btn btn-outline-primary" data-metric="amount">按预计金额</button></div>
+                            </div>
+                            <div class="card-body">
+                                <div id="funnel" class="funnel-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <jsp:include page="footer.jsp" />
+        </div>
+        <jsp:include page="scripts.jsp" />
+        <script src="https://cdn.jsdelivr.net/npm/echarts@5.4/dist/echarts.min.js"></script>
+        <script>const raw = ${ funnelJson }, chart = echarts.init(document.getElementById('funnel')); function draw(metric) { const money = metric === 'amount'; chart.setOption({ color: ['#2563eb', '#3b82f6', '#60a5fa', '#18a675', '#f59e0b', '#7c5ce5'], tooltip: { trigger: 'item', formatter: p => p.name + '<br>' + (money ? '预计金额：¥' + Number(p.value).toLocaleString() : '商机数量：' + p.value) }, series: [{ name: '销售漏斗', type: 'funnel', left: '10%', top: 20, bottom: 20, width: '80%', minSize: '25%', maxSize: '100%', sort: 'descending', gap: 4, label: { show: true, position: 'inside', formatter: p => p.name + '  ' + (money ? '¥' + Number(p.value).toLocaleString() : p.value + ' 个') }, itemStyle: { borderColor: '#fff', borderWidth: 3, borderRadius: 8 }, emphasis: { label: { fontSize: 16 } }, data: raw.map(x => ({ name: x.name, value: x[metric] })) }] }, true) } document.querySelectorAll('[data-metric]').forEach(b => b.onclick = () => { document.querySelectorAll('[data-metric]').forEach(x => x.classList.remove('active')); b.classList.add('active'); draw(b.dataset.metric) }); draw('value'); window.addEventListener('resize', () => chart.resize());</script>
+    </body>
+
+    </html>
