@@ -213,7 +213,7 @@ public class FollowUpDao
      */
     public int updateStatus(Connection conn, int id, int status) throws SQLException
     {
-        try (PreparedStatement p = conn.prepareStatement("UPDATE crm_follow_up_record SET status=?,update_time=NOW() WHERE id=?"))
+        try (PreparedStatement p = conn.prepareStatement("UPDATE crm_follow_up_record SET status=? WHERE id=?"))
         {
             p.setInt(1, status);
             p.setInt(2, id);
