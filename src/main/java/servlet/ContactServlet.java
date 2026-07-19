@@ -45,10 +45,12 @@ public class ContactServlet extends BaseServlet
         }
         if (p == null || "/list".equals(p) || "/search".equals(p))
         {
-            PageBean<Contact> pb = service.page(intVal(req.getParameter("currentPage"), 1), 10, req.getParameter("keyword"), user(req));
+            // 普通 GET 搜索只在提交表单后执行；去掉两端空格可避免无意义的查询差异。
+            String keyword = keyword(req);
+            PageBean<Contact> pb = service.page(intVal(req.getParameter("currentPage"), 1), 10, keyword, user(req));
             req.setAttribute("pageBean", pb);
             req.setAttribute("contactList", pb.getData());
-            req.setAttribute("keyword", req.getParameter("keyword"));
+            req.setAttribute("keyword", keyword);
             req.setAttribute("activeMenu", "contact");
             forward(req, resp, "/contact_list.jsp");
             return;
@@ -74,9 +76,7 @@ public class ContactServlet extends BaseServlet
         String p = req.getPathInfo();
         boolean ok;
         if ("/delete".equals(p))
-        {
             ok = service.delete(intVal(req.getParameter("id"), 0));
-        }
         else
         {
             Contact x = read(req);
@@ -107,21 +107,13 @@ public class ContactServlet extends BaseServlet
     private boolean allowed(HttpServletRequest req, Integer customerId)
     {
         if (customerId == null)
-        {
             return false;
-        }
         if (!user(req).isSales())
-        {
             return true;
-        }
         List<Customer> list = customerService.all(user(req));
         for (Customer c : list)
-        {
             if (c.getId().equals(customerId))
-            {
                 return true;
-            }
-        }
         return false;
     }
 }

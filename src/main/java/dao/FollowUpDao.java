@@ -62,64 +62,43 @@ public class FollowUpDao
         return sales ? " AND c.owner_user_id=? " : "";
     }
 
-    private String filters(String type, String from, String to)
+    /** 返回客户、商机、联系人和跟进内容四个字段的模糊搜索 SQL 片段。 */
+    private String keywordFilter(String keyword)
     {
-        // 只拼接固定的筛选片段；具体值仍使用问号绑定。
-        StringBuilder s = new StringBuilder();
-        if (type != null && !type.isBlank())
-        {
-            s.append(" AND f.follow_type=?");
-        }
-        if (from != null && !from.isBlank())
-        {
-            s.append(" AND DATE(f.follow_time)>=?");
-        }
-        if (to != null && !to.isBlank())
-        {
-            s.append(" AND DATE(f.follow_time)<=?");
-        }
-        return s.toString();
+        return keyword == null || keyword.isBlank() ? "" : " AND (c.customer_name LIKE ? OR o.title LIKE ? OR ct.name LIKE ? OR" + " f.follow_content LIKE ?)";
     }
 
-    private Object[] args(
-            String type, String from, String to, Integer uid, boolean sales, Object... tail)
+    private Object[] args(String keyword, Integer uid, boolean sales, Object... tail)
     {
-        // 参数必须严格按照 filters、scope、LIMIT 在 SQL 中出现的顺序加入。
+        // 参数必须严格按照四个 LIKE、scope、LIMIT 在 SQL 中出现的顺序加入。
         java.util.ArrayList<Object> a = new java.util.ArrayList<>();
-        if (type != null && !type.isBlank())
+        if (keyword != null && !keyword.isBlank())
         {
-            a.add(type);
-        }
-        if (from != null && !from.isBlank())
-        {
-            a.add(from);
-        }
-        if (to != null && !to.isBlank())
-        {
-            a.add(to);
+            String like = "%" + keyword.trim() + "%";
+            a.add(like);
+            a.add(like);
+            a.add(like);
+            a.add(like);
         }
         if (sales)
-        {
             a.add(uid);
-        }
         java.util.Collections.addAll(a, tail);
         return a.toArray();
     }
 
-    /** 统计筛选结果总数。 */
-    public int count(String type, String from, String to, Integer uid, boolean sales)
+    /** 统计模糊搜索结果总数。 */
+    public int count(String keyword, Integer uid, boolean sales)
     {
-        String sql = "SELECT COUNT(*)" + FROM + " WHERE f.status=1 AND c.status=1" + filters(type, from, to) + scope(sales);
-        Integer n = tpl.queryForObject(sql, Integer.class, args(type, from, to, uid, sales));
+        String sql = "SELECT COUNT(*)" + FROM + " WHERE f.status=1 AND c.status=1" + keywordFilter(keyword) + scope(sales);
+        Integer n = tpl.queryForObject(sql, Integer.class, args(keyword, uid, sales));
         return n == null ? 0 : n;
     }
 
-    /** 查询跟进记录分页列表。 */
-    public List<FollowUp> page(
-            int offset, int size, String type, String from, String to, Integer uid, boolean sales)
+    /** 按关键词查询跟进记录分页列表。 */
+    public List<FollowUp> page(int offset, int size, String keyword, Integer uid, boolean sales)
     {
-        String sql = SELECT + FROM + " WHERE f.status=1 AND c.status=1" + filters(type, from, to) + scope(sales) + " ORDER BY f.follow_time DESC LIMIT ?,?";
-        return tpl.query(sql, mapper, args(type, from, to, uid, sales, offset, size));
+        String sql = SELECT + FROM + " WHERE f.status=1 AND c.status=1" + keywordFilter(keyword) + scope(sales) + " ORDER BY f.follow_time DESC LIMIT ?,?";
+        return tpl.query(sql, mapper, args(keyword, uid, sales, offset, size));
     }
 
     /** 查询某客户的全部有效跟进，供客户详情时间线使用。 */
@@ -186,19 +165,15 @@ public class FollowUpDao
     private void setInt(PreparedStatement p, int i, Integer v) throws SQLException
     {
         if (v == null)
-        {
             p.setNull(i, Types.INTEGER);
-        }
         else
-        {
             p.setInt(i, v);
-        }
     }
 
     /** 逻辑删除跟进记录。 */
     public int updateStatus(Connection conn, int id, int status) throws SQLException
     {
-        try (PreparedStatement p = conn.prepareStatement("UPDATE crm_follow_up_record SET status=? WHERE id=?"))
+        try (PreparedStatement p = conn.prepareStatement("UPDATE crm_follow_up_record SET status=?,update_time=NOW() WHERE id=?"))
         {
             p.setInt(1, status);
             p.setInt(2, id);

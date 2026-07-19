@@ -24,9 +24,7 @@ public class ContactService
         int pages = (int) Math.ceil((double) total / size);
         // 请求页码超过末页时回到最后一页，避免出现“有数据但页面空白”。
         if (pages > 0 && p > pages)
-        {
             p = pages;
-        }
         return new PageBean<>(p, size, total, dao.page((p - 1) * size, size, keyword, u.getId(), u.isSales()));
     }
 
@@ -47,9 +45,7 @@ public class ContactService
     {
         // 所属客户和姓名是数据库必填项，先在业务层给出失败结果。
         if (x == null || x.getCustomerId() == null || x.getName() == null || x.getName().isBlank())
-        {
             return false;
-        }
         Connection conn = null;
         try
         {
@@ -68,7 +64,6 @@ public class ContactService
         {
             // 事务步骤 5：异常回滚。
             if (conn != null)
-            {
                 try
                 {
                     conn.rollback();
@@ -76,7 +71,6 @@ public class ContactService
                 catch (Exception ignored)
                 {
                 }
-            }
             e.printStackTrace();
             return false;
         }
@@ -84,7 +78,6 @@ public class ContactService
         {
             // 事务步骤 6：归还连接。
             if (conn != null)
-            {
                 try
                 {
                     conn.close();
@@ -92,7 +85,6 @@ public class ContactService
                 catch (Exception ignored)
                 {
                 }
-            }
         }
     }
 
@@ -115,7 +107,6 @@ public class ContactService
         {
             // 事务步骤 5：失败回滚。
             if (conn != null)
-            {
                 try
                 {
                     conn.rollback();
@@ -123,7 +114,6 @@ public class ContactService
                 catch (Exception ignored)
                 {
                 }
-            }
             e.printStackTrace();
             return false;
         }
@@ -131,7 +121,6 @@ public class ContactService
         {
             // 事务步骤 6：关闭/归还连接。
             if (conn != null)
-            {
                 try
                 {
                     conn.close();
@@ -139,7 +128,6 @@ public class ContactService
                 catch (Exception ignored)
                 {
                 }
-            }
         }
     }
 }

@@ -67,6 +67,19 @@ public abstract class BaseServlet extends HttpServlet
         }
     }
 
+    /**
+     * 读取并规范化列表页的模糊搜索关键词。
+     *
+     * <p>
+     * trim 会删除用户无意输入的首尾空格；如果输入框是空白，返回空字符串，DAO 的参数化 LIKE
+     * 查询就会按完整列表处理。所有列表共用此方法，可确保搜索和分页回显采用同一个值。
+     */
+    protected String keyword(HttpServletRequest req)
+    {
+        String value = req.getParameter("keyword");
+        return value == null ? "" : value.trim();
+    }
+
     /** 从 Session 中取得登录时保存的用户对象。登录过滤器保证业务请求中它不为 null。 */
     protected User user(HttpServletRequest req)
     {

@@ -31,9 +31,13 @@ public class ContractServlet extends BaseServlet
         String p = req.getPathInfo();
         if (p == null || "/list".equals(p) || "/search".equals(p))
         {
-            PageBean<Contract> pb = service.page(intVal(req.getParameter("currentPage"), 1), 10, req.getParameter("businessStatus"), user(req));
+            // 合同列表只接收 keyword；旧状态参数即使出现在 URL 中也不会被读取。
+            String keyword = keyword(req);
+            PageBean<Contract> pb = service.page(intVal(req.getParameter("currentPage"), 1), 10, keyword, user(req));
             req.setAttribute("pageBean", pb);
             req.setAttribute("contractList", pb.getData());
+            // 保留搜索框内的原关键词，并让分页链接能继续携带它。
+            req.setAttribute("keyword", keyword);
             req.setAttribute("activeMenu", "contract");
             forward(req, resp, "/contract_list.jsp");
             return;
@@ -71,9 +75,7 @@ public class ContractServlet extends BaseServlet
         }
         boolean ok;
         if ("/delete".equals(req.getPathInfo()))
-        {
             ok = service.delete(intVal(req.getParameter("id"), 0));
-        }
         else
         {
             Contract x = read(req);
@@ -87,14 +89,10 @@ public class ContractServlet extends BaseServlet
     {
         Integer id = integer(req.getParameter("opportunityId"));
         if (id == null)
-        {
             return null;
-        }
         Opportunity o = opportunityService.get(id, user(req));
         if (o == null || !"已成交".equals(o.getBusinessStatus()) || service.existsForOpportunity(id))
-        {
             return null;
-        }
         Contract x = new Contract();
         x.setOpportunityId(id);
         x.setOpportunityTitle(o.getTitle());
@@ -130,16 +128,12 @@ public class ContractServlet extends BaseServlet
         String[] prices = r.getParameterValues("items[][unitPrice]");
         List<LineItem> list = new ArrayList<>();
         if (products == null)
-        {
             return list;
-        }
         for (int i = 0; i < products.length; i++)
         {
             Integer pid = integer(products[i]);
             if (pid == null)
-            {
                 continue;
-            }
             LineItem x = new LineItem();
             x.setProductId(pid);
             x.setQuantity(intVal(quantities != null && i < quantities.length ? quantities[i] : null, 1));
@@ -152,20 +146,12 @@ public class ContractServlet extends BaseServlet
     private boolean allowed(HttpServletRequest req, Integer cid)
     {
         if (cid == null)
-        {
             return false;
-        }
         if (!user(req).isSales())
-        {
             return true;
-        }
         for (Customer c : customerService.all(user(req)))
-        {
             if (c.getId().equals(cid))
-            {
                 return true;
-            }
-        }
         return false;
     }
 }

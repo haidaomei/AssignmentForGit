@@ -1,1 +1,84 @@
-<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %><%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %><!DOCTYPE html><html lang="zh-CN"><head><jsp:include page="header.jsp"/></head><body class="hold-transition sidebar-mini"><div class="wrapper"><jsp:include page="navbar.jsp"/><jsp:include page="sidebar.jsp"/><div class="content-wrapper"><div class="content-header"><div class="container-fluid"><h1>新增跟进记录</h1></div></div><section class="content"><div class="container-fluid"><form method="post" action="${pageContext.request.contextPath}/follow/save"><div class="card"><div class="card-header"><h3 class="card-title">本次沟通</h3></div><div class="card-body"><div class="row"><div class="form-group col-md-4"><label>关联客户 *</label><select name="customerId" id="customerId" class="form-control" required><option value="">请选择</option><c:forEach items="${customerList}" var="c"><option value="${c.id}" ${selectedCustomerId==c.id?'selected':''}>${c.customerName}</option></c:forEach></select></div><div class="form-group col-md-4"><label>关联商机</label><select name="opportunityId" id="opportunityId" class="form-control" data-selected="${selectedOpportunityId}"><option value="">无</option></select></div><div class="form-group col-md-4"><label>沟通联系人</label><select name="contactId" id="contactId" class="form-control"><option value="">请选择</option></select></div><div class="form-group col-md-4"><label>跟进方式 *</label><select name="followType" class="form-control" required><c:forEach items="${['电话','拜访','邮件','线上会议','其它']}" var="v"><option>${v}</option></c:forEach></select></div><div class="form-group col-md-4"><label>跟进时间</label><input type="datetime-local" name="followTime" class="form-control"></div><div class="form-group col-md-4"><label>计划下次跟进</label><input type="datetime-local" name="nextFollowTime" class="form-control"></div><div class="form-group col-12"><label>跟进内容 *</label><textarea name="followContent" class="form-control" rows="4" required></textarea></div><div class="form-group col-md-6"><label>客户反馈</label><textarea name="customerFeedback" class="form-control" rows="3"></textarea></div><div class="form-group col-md-6"><label>下一步计划</label><textarea name="nextPlan" class="form-control" rows="3"></textarea></div></div></div><div class="card-footer text-right"><a href="${pageContext.request.contextPath}/follow/list" class="btn btn-light">取消</a> <button class="btn btn-primary"><i class="fas fa-save"></i> 保存跟进</button></div></div></form></div></section></div><jsp:include page="footer.jsp"/></div><jsp:include page="scripts.jsp"/><script>const ctx='${pageContext.request.contextPath}';async function loadOptions(){const id=document.getElementById('customerId').value,c=document.getElementById('contactId'),o=document.getElementById('opportunityId'),selected=o.dataset.selected;c.innerHTML='<option value="">请选择</option>';o.innerHTML='<option value="">无</option>';if(!id)return;const [cs,os]=await Promise.all([fetch(ctx+'/contact/options?customerId='+id).then(r=>r.json()),fetch(ctx+'/opportunity/options?customerId='+id).then(r=>r.json())]);cs.forEach(x=>c.add(new Option(x.name,x.id)));os.forEach(x=>{const op=new Option(x.title,x.id);if(String(x.id)===selected)op.selected=true;o.add(op)})}document.getElementById('customerId').onchange=()=>{document.getElementById('opportunityId').dataset.selected='';loadOptions()};loadOptions();</script></body></html>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8"%><%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%><!DOCTYPE html>
+<html lang="zh-CN">
+<head><jsp:include page="header.jsp" /></head>
+<body class="hold-transition sidebar-mini">
+	<div class="wrapper"><jsp:include page="navbar.jsp" /><jsp:include page="sidebar.jsp" /><div class="content-wrapper">
+			<div class="content-header">
+				<div class="container-fluid">
+					<h1>新增跟进记录</h1>
+				</div>
+			</div>
+			<section class="content">
+				<div class="container-fluid">
+					<form method="post" action="${pageContext.request.contextPath}/follow/save">
+						<div class="card">
+							<div class="card-header">
+								<h3 class="card-title">本次沟通</h3>
+							</div>
+							<div class="card-body">
+								<div class="row">
+									<div class="form-group col-md-4">
+										<label>关联客户 *</label>
+										<select name="customerId" id="customerId" class="form-control" required>
+											<option value="">请选择</option>
+											<c:forEach items="${customerList}" var="c">
+												<option value="${c.id}" ${selectedCustomerId==c.id?'selected':''}>${c.customerName}</option>
+											</c:forEach>
+										</select>
+									</div>
+									<div class="form-group col-md-4">
+										<label>关联商机</label>
+										<select name="opportunityId" id="opportunityId" class="form-control" data-selected="${selectedOpportunityId}">
+											<option value="">无</option>
+										</select>
+									</div>
+									<div class="form-group col-md-4">
+										<label>沟通联系人</label>
+										<select name="contactId" id="contactId" class="form-control">
+											<option value="">请选择</option>
+										</select>
+									</div>
+									<div class="form-group col-md-4">
+										<label>跟进方式 *</label>
+										<select name="followType" class="form-control" required>
+											<c:forEach items="${['电话','拜访','邮件','线上会议','其它']}" var="v">
+												<option>${v}</option>
+											</c:forEach>
+										</select>
+									</div>
+									<div class="form-group col-md-4">
+										<label>跟进时间</label>
+										<input type="datetime-local" name="followTime" class="form-control">
+									</div>
+									<div class="form-group col-md-4">
+										<label>计划下次跟进</label>
+										<input type="datetime-local" name="nextFollowTime" class="form-control">
+									</div>
+									<div class="form-group col-12">
+										<label>跟进内容 *</label>
+										<textarea name="followContent" class="form-control" rows="4" required></textarea>
+									</div>
+									<div class="form-group col-md-6">
+										<label>客户反馈</label>
+										<textarea name="customerFeedback" class="form-control" rows="3"></textarea>
+									</div>
+									<div class="form-group col-md-6">
+										<label>下一步计划</label>
+										<textarea name="nextPlan" class="form-control" rows="3"></textarea>
+									</div>
+								</div>
+							</div>
+							<div class="card-footer text-right">
+								<a href="${pageContext.request.contextPath}/follow/list" class="btn btn-light">取消</a>
+								<button class="btn btn-primary">
+									<i class="fas fa-save"></i>
+									保存跟进
+								</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</section>
+		</div><jsp:include page="footer.jsp" /></div><jsp:include page="scripts.jsp" /><script>const ctx='${pageContext.request.contextPath}';async function loadOptions(){const id=document.getElementById('customerId').value,c=document.getElementById('contactId'),o=document.getElementById('opportunityId'),selected=o.dataset.selected;c.innerHTML='<option value="">请选择</option>';o.innerHTML='<option value="">无</option>';if(!id)return;const [cs,os]=await Promise.all([fetch(ctx+'/contact/options?customerId='+id).then(r=>r.json()),fetch(ctx+'/opportunity/options?customerId='+id).then(r=>r.json())]);cs.forEach(x=>c.add(new Option(x.name,x.id)));os.forEach(x=>{const op=new Option(x.title,x.id);if(String(x.id)===selected)op.selected=true;o.add(op)})}document.getElementById('customerId').onchange=()=>{document.getElementById('opportunityId').dataset.selected='';loadOptions()};loadOptions();</script>
+</body>
+</html>

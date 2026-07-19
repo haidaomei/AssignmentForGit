@@ -23,19 +23,17 @@ public class FollowUpService
     /** 用于更新客户的最后跟进时间。 */
     private final CustomerDao customerDao = new CustomerDao();
 
-    /** 按跟进类型和日期区间查询分页，并应用当前用户的数据范围。 */
-    public PageBean<FollowUp> page(int p, int size, String type, String from, String to, User u)
+    /** 按客户、商机、联系人或跟进内容模糊查询分页，并应用当前用户的数据范围。 */
+    public PageBean<FollowUp> page(int p, int size, String keyword, User u)
     {
         // 修正非法页码和每页大小。
         p = Math.max(1, p);
         size = size <= 0 ? 10 : size;
-        int total = dao.count(type, from, to, u.getId(), u.isSales());
+        int total = dao.count(keyword, u.getId(), u.isSales());
         int pages = (int) Math.ceil((double) total / size);
         if (pages > 0 && p > pages)
-        {
             p = pages;
-        }
-        return new PageBean<>(p, size, total, dao.page((p - 1) * size, size, type, from, to, u.getId(), u.isSales()));
+        return new PageBean<>(p, size, total, dao.page((p - 1) * size, size, keyword, u.getId(), u.isSales()));
     }
 
     /**
@@ -81,9 +79,7 @@ public class FollowUpService
     {
         // 客户和跟进内容是最低必填项；校验失败时不打开数据库连接。
         if (x == null || x.getCustomerId() == null || x.getFollowContent() == null || x.getFollowContent().isBlank())
-        {
             return false;
-        }
         Connection conn = null;
         try
         {
@@ -92,17 +88,16 @@ public class FollowUpService
             // 2. 关闭自动提交。
             conn.setAutoCommit(false);
             // 3. 用同一连接保存跟进，并更新客户时间。
-            dao.save(conn, x);
+            int n = dao.save(conn, x);
             customerDao.updateLastFollowTime(conn, x.getCustomerId(), x.getFollowTime());
             // 4. 两条 SQL 都成功后提交。
             conn.commit();
-            return true;
+            return n > 0;
         }
         catch (Exception e)
         {
             // 5. 失败时回滚两条 SQL。
             if (conn != null)
-            {
                 try
                 {
                     conn.rollback();
@@ -110,7 +105,6 @@ public class FollowUpService
                 catch (Exception ignored)
                 {
                 }
-            }
             e.printStackTrace();
             return false;
         }
@@ -118,7 +112,6 @@ public class FollowUpService
         {
             // 6. 归还连接。
             if (conn != null)
-            {
                 try
                 {
                     conn.close();
@@ -126,7 +119,6 @@ public class FollowUpService
                 catch (Exception ignored)
                 {
                 }
-            }
         }
     }
 
@@ -147,7 +139,6 @@ public class FollowUpService
         {
             // 5. 异常回滚。
             if (conn != null)
-            {
                 try
                 {
                     conn.rollback();
@@ -155,7 +146,6 @@ public class FollowUpService
                 catch (Exception ignored)
                 {
                 }
-            }
             e.printStackTrace();
             return false;
         }
@@ -163,7 +153,6 @@ public class FollowUpService
         {
             // 6. 关闭连接。
             if (conn != null)
-            {
                 try
                 {
                     conn.close();
@@ -171,10 +160,6 @@ public class FollowUpService
                 catch (Exception ignored)
                 {
                 }
-            }
         }
     }
 }
-// 根据总条数计算总页数，并防止页码越界。
-// 3. 执行逻辑删除。
-// 4. 提交。

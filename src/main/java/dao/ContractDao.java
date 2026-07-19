@@ -84,45 +84,46 @@ public class ContractDao
         return sales ? " AND c.owner_user_id=? " : "";
     }
 
-    private String filter(String state)
+    /** 返回合同编号、合同名称和客户名称的模糊搜索条件。 */
+    private String keywordFilter(String keyword)
     {
-        // 仅当页面真的选择状态时才追加问号条件。
-        return state != null && !state.isBlank() ? " AND h.business_status=? " : "";
+        return keyword == null || keyword.isBlank() ? "" : " AND (h.contract_no LIKE ? OR h.contract_name LIKE ? OR c.customer_name LIKE ?) ";
     }
 
-    /** 统计权限与状态筛选后的合同数量。 */
-    public int count(String state, Integer uid, boolean sales)
+    /** 统计权限与关键词搜索后的合同数量。 */
+    public int count(String keyword, Integer uid, boolean sales)
     {
-        String sql = "SELECT COUNT(*)" + FROM + " WHERE h.status=1 AND c.status=1" + filter(state) + scope(sales);
+        String sql = "SELECT COUNT(*)" + FROM + " WHERE h.status=1 AND c.status=1" + keywordFilter(keyword) + scope(sales);
         java.util.List<Object> a = new java.util.ArrayList<>();
-        if (state != null && !state.isBlank())
-        {
-            a.add(state);
-        }
+        addKeywordArgs(a, keyword);
         if (sales)
-        {
             a.add(uid);
-        }
         Integer n = tpl.queryForObject(sql, Integer.class, a.toArray());
         return n == null ? 0 : n;
     }
 
-    /** 查询合同分页列表。参数列表顺序必须与动态 SQL 问号顺序一致。 */
-    public List<Contract> page(int offset, int size, String state, Integer uid, boolean sales)
+    /** 按关键词查询合同分页列表。参数列表顺序必须与动态 SQL 问号顺序一致。 */
+    public List<Contract> page(int offset, int size, String keyword, Integer uid, boolean sales)
     {
-        String sql = SELECT + FROM + " WHERE h.status=1 AND c.status=1" + filter(state) + scope(sales) + " ORDER BY h.create_time DESC LIMIT ?,?";
+        String sql = SELECT + FROM + " WHERE h.status=1 AND c.status=1" + keywordFilter(keyword) + scope(sales) + " ORDER BY h.create_time DESC LIMIT ?,?";
         java.util.List<Object> a = new java.util.ArrayList<>();
-        if (state != null && !state.isBlank())
-        {
-            a.add(state);
-        }
+        addKeywordArgs(a, keyword);
         if (sales)
-        {
             a.add(uid);
-        }
         a.add(offset);
         a.add(size);
         return tpl.query(sql, mapper, a.toArray());
+    }
+
+    /** 为合同查询的三个 LIKE 问号追加同一个参数值。 */
+    private void addKeywordArgs(java.util.List<Object> args, String keyword)
+    {
+        if (keyword == null || keyword.isBlank())
+            return;
+        String like = "%" + keyword.trim() + "%";
+        args.add(like);
+        args.add(like);
+        args.add(like);
     }
 
     /** 查询合同详情，并装入它的有效产品明细。 */
@@ -133,9 +134,7 @@ public class ContractDao
             String sql = SELECT + FROM + " WHERE h.status=1 AND c.status=1 AND h.id=?" + scope(sales);
             Contract x = sales ? tpl.queryForObject(sql, mapper, id, uid) : tpl.queryForObject(sql, mapper, id);
             if (x != null)
-            {
                 x.setItems(items(id));
-            }
             return x;
         }
         catch (EmptyResultDataAccessException e)
@@ -184,9 +183,7 @@ public class ContractDao
             try (ResultSet r = p.getGeneratedKeys())
             {
                 if (!r.next())
-                {
                     throw new SQLException("无法取得合同主键");
-                }
                 return r.getInt(1);
             }
         }
@@ -209,9 +206,7 @@ public class ContractDao
     {
         int i = 1;
         if (withNo)
-        {
             p.setString(i++, x.getContractNo());
-        }
         p.setString(i++, x.getContractName());
         setInt(p, i++, x.getOpportunityId());
         p.setInt(i++, x.getCustomerId());
@@ -222,9 +217,7 @@ public class ContractDao
         p.setString(i++, x.getPaymentTerms());
         p.setString(i++, x.getBusinessStatus());
         if (withNo)
-        {
             setInt(p, i++, x.getCreateUserId());
-        }
         p.setString(i, x.getRemarks());
     }
 
@@ -238,13 +231,9 @@ public class ContractDao
     private void setInt(PreparedStatement p, int i, Integer v) throws SQLException
     {
         if (v == null)
-        {
             p.setNull(i, Types.INTEGER);
-        }
         else
-        {
             p.setInt(i, v);
-        }
     }
 
     /** 编辑合同时逻辑停用旧明细。 */

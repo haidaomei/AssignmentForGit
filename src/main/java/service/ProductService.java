@@ -21,9 +21,7 @@ public class ProductService
         int total = dao.count(keyword);
         int pages = (int) Math.ceil((double) total / size);
         if (pages > 0 && p > pages)
-        {
             p = pages;
-        }
         return new PageBean<>(p, size, total, dao.page((p - 1) * size, size, keyword));
     }
 
@@ -44,9 +42,7 @@ public class ProductService
     {
         // 产品名称是最基本的业务必填项。
         if (x == null || x.getProductName() == null || x.getProductName().isBlank())
-        {
             return false;
-        }
         Connection conn = null;
         try
         {
@@ -64,7 +60,6 @@ public class ProductService
         {
             // 事务步骤 5：异常回滚。
             if (conn != null)
-            {
                 try
                 {
                     conn.rollback();
@@ -72,7 +67,6 @@ public class ProductService
                 catch (Exception ignored)
                 {
                 }
-            }
             e.printStackTrace();
             return false;
         }
@@ -80,7 +74,6 @@ public class ProductService
         {
             // 事务步骤 6：归还连接。
             if (conn != null)
-            {
                 try
                 {
                     conn.close();
@@ -88,7 +81,6 @@ public class ProductService
                 catch (Exception ignored)
                 {
                 }
-            }
         }
     }
 
@@ -111,7 +103,6 @@ public class ProductService
         {
             // 事务步骤 5。
             if (conn != null)
-            {
                 try
                 {
                     conn.rollback();
@@ -119,7 +110,6 @@ public class ProductService
                 catch (Exception ignored)
                 {
                 }
-            }
             e.printStackTrace();
             return false;
         }
@@ -127,7 +117,6 @@ public class ProductService
         {
             // 事务步骤 6。
             if (conn != null)
-            {
                 try
                 {
                     conn.close();
@@ -135,7 +124,6 @@ public class ProductService
                 catch (Exception ignored)
                 {
                 }
-            }
         }
     }
 }

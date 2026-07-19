@@ -83,56 +83,49 @@ public class OpportunityDao
         return sales ? " AND o.owner_user_id=? " : "";
     }
 
-    /** 根据用户选择，动态追加阶段与业务状态筛选条件。这里只拼接固定 SQL，不拼接输入值。 */
-    private String filters(String stage, String state)
+    /**
+     * 根据关键词追加商机编号、标题和客户名称模糊搜索条件。
+     *
+     * <p>
+     * 这里只拼接预先写好的 SQL 片段，用户输入不会被拼入 SQL，而是稍后通过问号参数绑定。
+     */
+    private String keywordFilter(String keyword)
     {
-        StringBuilder s = new StringBuilder();
-        if (stage != null && !stage.isBlank())
-        {
-            s.append(" AND o.stage_id=? ");
-        }
-        if (state != null && !state.isBlank())
-        {
-            s.append(" AND o.business_status=? ");
-        }
-        return s.toString();
+        return keyword == null || keyword.isBlank() ? "" : " AND (o.opportunity_no LIKE ? OR o.title LIKE ? OR c.customer_name LIKE ?) ";
     }
 
-    /** 按与 filters 完全相同的顺序组装参数数组，保证每个问号都有对应参数。 */
-    private Object[] args(String stage, String state, Integer uid, boolean sales, Object... tail)
+    /** 按“三个 LIKE→权限用户→分页”的 SQL 顺序组装参数。 */
+    private Object[] args(String keyword, Integer uid, boolean sales, Object... tail)
     {
         java.util.ArrayList<Object> a = new java.util.ArrayList<>();
-        if (stage != null && !stage.isBlank())
+        if (keyword != null && !keyword.isBlank())
         {
-            a.add(Integer.parseInt(stage));
-        }
-        if (state != null && !state.isBlank())
-        {
-            a.add(state);
+            // 前后的 % 表示关键词可以出现在字段任意位置，三个问号绑定同一模糊值。
+            String like = "%" + keyword.trim() + "%";
+            a.add(like);
+            a.add(like);
+            a.add(like);
         }
         if (sales)
-        {
             a.add(uid);
-        }
         // tail 常用于追加分页的 offset 和 size。
         java.util.Collections.addAll(a, tail);
         return a.toArray();
     }
 
-    /** 统计筛选后的商机总数。客户 status=1 实现父客户删除后的级联隐藏。 */
-    public int count(String stage, String state, Integer uid, boolean sales)
+    /** 统计模糊搜索后的商机总数。客户 status=1 实现父客户删除后的级联隐藏。 */
+    public int count(String keyword, Integer uid, boolean sales)
     {
-        String sql = "SELECT COUNT(*)" + FROM + " WHERE o.status=1 AND c.status=1" + filters(stage, state) + scope(sales);
-        Integer n = tpl.queryForObject(sql, Integer.class, args(stage, state, uid, sales));
+        String sql = "SELECT COUNT(*)" + FROM + " WHERE o.status=1 AND c.status=1" + keywordFilter(keyword) + scope(sales);
+        Integer n = tpl.queryForObject(sql, Integer.class, args(keyword, uid, sales));
         return n == null ? 0 : n;
     }
 
-    /** 查询商机分页列表。 */
-    public List<Opportunity> page(
-            int offset, int size, String stage, String state, Integer uid, boolean sales)
+    /** 按关键词查询商机分页列表。 */
+    public List<Opportunity> page(int offset, int size, String keyword, Integer uid, boolean sales)
     {
-        String sql = SELECT + FROM + " WHERE o.status=1 AND c.status=1" + filters(stage, state) + scope(sales) + " ORDER BY o.create_time DESC LIMIT ?,?";
-        return tpl.query(sql, mapper, args(stage, state, uid, sales, offset, size));
+        String sql = SELECT + FROM + " WHERE o.status=1 AND c.status=1" + keywordFilter(keyword) + scope(sales) + " ORDER BY o.create_time DESC LIMIT ?,?";
+        return tpl.query(sql, mapper, args(keyword, uid, sales, offset, size));
     }
 
     /** 查询某个客户的商机，供客户详情页展示。 */
@@ -150,9 +143,7 @@ public class OpportunityDao
             Opportunity x = sales ? tpl.queryForObject(sql, mapper, id, uid) : tpl.queryForObject(sql, mapper, id);
             // 主表和从表分两次查询，代码更清晰，也避免 JOIN 后主表数据被每条明细重复。
             if (x != null)
-            {
                 x.setItems(items(id));
-            }
             return x;
         }
         catch (EmptyResultDataAccessException e)
@@ -195,9 +186,7 @@ public class OpportunityDao
             try (ResultSet r = p.getGeneratedKeys())
             {
                 if (!r.next())
-                {
                     throw new SQLException("无法取得商机主键");
-                }
                 return r.getInt(1);
             }
         }
@@ -220,9 +209,7 @@ public class OpportunityDao
     {
         int i = 1;
         if (withNo)
-        {
             p.setString(i++, x.getOpportunityNo());
-        }
         p.setString(i++, x.getTitle());
         p.setInt(i++, x.getCustomerId());
         setInt(p, i++, x.getContactId());
@@ -245,13 +232,9 @@ public class OpportunityDao
     private void setInt(PreparedStatement p, int i, Integer v) throws SQLException
     {
         if (v == null)
-        {
             p.setNull(i, Types.INTEGER);
-        }
         else
-        {
             p.setInt(i, v);
-        }
     }
 
     /** 编辑主从表时先把全部旧明细逻辑删除。 */

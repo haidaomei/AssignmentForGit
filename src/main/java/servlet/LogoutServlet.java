@@ -13,8 +13,8 @@ public class LogoutServlet extends HttpServlet
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException
     {
         req.getSession().invalidate();
-        resp.sendRedirect(req.getContextPath() + "/login.jsp");
+        // 退出后返回统一登录入口，LoginServlet 会负责读取“记住我”Cookie。
+        resp.sendRedirect(req.getContextPath() + "/login");
     }
 }
 // invalidate 使 Session 中的 user 和其他会话属性全部失效。
-// 重定向中加上 contextPath，保证项目不是部署在根路径时也能正常跳转。

@@ -34,9 +34,7 @@ public final class DbHelper
             {
                 // 如果返回 null，说明配置文件没有被打包或名称写错，应立即终止启动并给出明确提示。
                 if (is == null)
-                {
                     throw new RuntimeException("找不到 jdbc.properties 文件");
-                }
                 // 把配置文件中的每一项加载到 props 对象。
                 props.load(is);
             }

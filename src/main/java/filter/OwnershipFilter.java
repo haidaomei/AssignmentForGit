@@ -28,16 +28,6 @@ public class OwnershipFilter implements Filter
     private final ContractService contracts = new ContractService();
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException
-    {
-    }
-
-    @Override
-    public void destroy()
-    {
-    }
-
-    @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException
     {
         HttpServletRequest req = (HttpServletRequest) request;
@@ -53,29 +43,17 @@ public class OwnershipFilter implements Filter
         Integer customerId = integer(req.getParameter("customerId"));
         boolean allowed = true;
         if (path.startsWith("/customer/") && id > 0)
-        {
             allowed = customers.get(id, user) != null;
-        }
         else if (path.startsWith("/contact/") && id > 0)
-        {
             allowed = contacts.get(id, user) != null;
-        }
         else if (path.startsWith("/opportunity/") && id > 0)
-        {
             allowed = opportunities.get(id, user) != null;
-        }
         else if (path.startsWith("/follow/delete") && id > 0)
-        {
             allowed = follows.accessible(id, user);
-        }
         else if (path.startsWith("/contract/") && id > 0)
-        {
             allowed = contracts.get(id, user) != null;
-        }
         else if (customerId != null)
-        {
             allowed = owns(customerId, user);
-        }
         if (!allowed)
         {
             resp.setStatus(403);
@@ -90,12 +68,8 @@ public class OwnershipFilter implements Filter
     private boolean owns(int customerId, User user)
     {
         for (Customer c : customers.all(user))
-        {
             if (c.getId() == customerId)
-            {
                 return true;
-            }
-        }
         return false;
     }
 

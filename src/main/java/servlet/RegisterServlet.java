@@ -46,9 +46,8 @@ public class RegisterServlet extends BaseServlet
         u.setEmail(req.getParameter("email"));
         if (service.register(u))
         {
-            req.getSession().setAttribute("flashMsg", "注册成功，请使用新账号登录");
-            req.getSession().setAttribute("flashType", "success");
-            redirect(req, resp, "/login.jsp");
+            // 注册成功后直接进入统一登录入口；登录页按需求不显示绿色提醒框。
+            redirect(req, resp, "/login");
         }
         else
         {
@@ -62,5 +61,4 @@ public class RegisterServlet extends BaseServlet
 // 先校验验证码，防止自动化批量注册。
 // 两次密码必须完全相同，否则不继续调用数据库。
 // 将 HTTP 表单中的字符串逐项封装到 User 实体对象。
-// 注册成功时把一次性消息放入 Session，重定向后的登录页仍可显示它。
 // 失败时使用 request 转发，当前页面可立即显示错误原因。

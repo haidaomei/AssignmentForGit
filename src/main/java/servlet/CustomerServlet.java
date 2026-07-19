@@ -32,25 +32,15 @@ public class CustomerServlet extends BaseServlet
         try
         {
             if (p == null || "/list".equals(p) || "/search".equals(p))
-            {
                 list(req, resp);
-            }
             else if ("/add".equals(p))
-            {
                 form(req, resp, null);
-            }
             else if ("/edit".equals(p))
-            {
                 form(req, resp, service.get(intVal(req.getParameter("id"), 0), user(req)));
-            }
             else if ("/detail".equals(p))
-            {
                 detail(req, resp);
-            }
             else
-            {
                 list(req, resp);
-            }
         }
         catch (Exception e)
         {
@@ -86,10 +76,12 @@ public class CustomerServlet extends BaseServlet
 
     private void list(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
     {
-        PageBean<Customer> pb = service.page(intVal(req.getParameter("currentPage"), 1), 10, req.getParameter("keyword"), user(req));
+        // 先统一去除关键词首尾空格，再把同一个值同时用于数据库查询和搜索框回显。
+        String keyword = keyword(req);
+        PageBean<Customer> pb = service.page(intVal(req.getParameter("currentPage"), 1), 10, keyword, user(req));
         req.setAttribute("pageBean", pb);
         req.setAttribute("customerList", pb.getData());
-        req.setAttribute("keyword", req.getParameter("keyword"));
+        req.setAttribute("keyword", keyword);
         req.setAttribute("activeMenu", "customer");
         forward(req, resp, "/customer_list.jsp");
     }
@@ -138,9 +130,7 @@ public class CustomerServlet extends BaseServlet
         x.setSourceId(integer(r.getParameter("sourceId")));
         x.setOwnerUserId(integer(r.getParameter("ownerUserId")));
         if (x.getOwnerUserId() == null)
-        {
             x.setOwnerUserId(user(r).getId());
-        }
         x.setCreditRating(r.getParameter("creditRating"));
         x.setDescription(r.getParameter("description"));
         return x;

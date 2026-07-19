@@ -26,9 +26,13 @@ public class FollowUpServlet extends BaseServlet
         String p = req.getPathInfo();
         if (p == null || "/list".equals(p) || "/search".equals(p))
         {
-            PageBean<FollowUp> pb = service.page(intVal(req.getParameter("currentPage"), 1), 10, req.getParameter("followType"), req.getParameter("dateFrom"), req.getParameter("dateTo"), user(req));
+            // 列表不再解析方式和日期筛选，只把去除首尾空格后的关键词交给 Service。
+            String keyword = keyword(req);
+            PageBean<FollowUp> pb = service.page(intVal(req.getParameter("currentPage"), 1), 10, keyword, user(req));
             req.setAttribute("pageBean", pb);
             req.setAttribute("followList", pb.getData());
+            // 回显普通 GET 搜索的关键词，不在浏览器中发起实时请求。
+            req.setAttribute("keyword", keyword);
             req.setAttribute("activeMenu", "follow");
             forward(req, resp, "/follow_list.jsp");
             return;
@@ -52,9 +56,7 @@ public class FollowUpServlet extends BaseServlet
         }
         boolean ok;
         if ("/delete".equals(req.getPathInfo()))
-        {
             ok = service.delete(intVal(req.getParameter("id"), 0));
-        }
         else
         {
             FollowUp x = new FollowUp();
@@ -69,9 +71,7 @@ public class FollowUpServlet extends BaseServlet
             x.setFollowUserId(user(req).getId());
             x.setFollowTime(normalize(req.getParameter("followTime")));
             if (x.getFollowTime() == null)
-            {
                 x.setFollowTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
-            }
             ok = allowed(req, x.getCustomerId()) && service.add(x);
         }
         flash(req, ok, "跟进记录保存成功");
@@ -86,20 +86,12 @@ public class FollowUpServlet extends BaseServlet
     private boolean allowed(HttpServletRequest req, Integer cid)
     {
         if (cid == null)
-        {
             return false;
-        }
         if (!user(req).isSales())
-        {
             return true;
-        }
         for (Customer c : customerService.all(user(req)))
-        {
             if (c.getId().equals(cid))
-            {
                 return true;
-            }
-        }
         return false;
     }
 }

@@ -44,9 +44,7 @@ public class CustomerService
         int pages = (int) Math.ceil((double) total / size);
         // 删除最后一页数据后，把过大的页码拉回到最后一页。
         if (pages > 0 && page > pages)
-        {
             page = pages;
-        }
         return new PageBean<>(page, size, total, dao.page((page - 1) * size, size, keyword, user.getId(), sales));
     }
 
@@ -109,9 +107,7 @@ public class CustomerService
     {
         // 业务层先阻止空对象或空客户名称进入数据库。
         if (x == null || blank(x.getCustomerName()))
-        {
             return false;
-        }
         Connection conn = null;
         try
         {
@@ -121,16 +117,15 @@ public class CustomerService
             conn.setAutoCommit(false);
             // 事务第 3 步：用同一个 conn 生成编号并保存客户。
             x.setCustomerNo(dao.nextNumber(conn));
-            dao.save(conn, x);
+            int n = dao.save(conn, x);
             // 事务第 4 步：所有 SQL 都成功后永久保存修改。
             conn.commit();
-            return true;
+            return n > 0;
         }
         catch (Exception e)
         {
             // 事务第 5 步：任何一步失败都撤销本次事务已执行的 SQL。
             if (conn != null)
-            {
                 try
                 {
                     conn.rollback();
@@ -138,7 +133,6 @@ public class CustomerService
                 catch (Exception ignored)
                 {
                 }
-            }
             e.printStackTrace();
             return false;
         }
@@ -146,7 +140,6 @@ public class CustomerService
         {
             // 事务第 6 步：无论成功还是失败都归还连接，防止连接池耗尽。
             if (conn != null)
-            {
                 try
                 {
                     conn.close();
@@ -154,7 +147,6 @@ public class CustomerService
                 catch (Exception ignored)
                 {
                 }
-            }
         }
     }
 
@@ -162,9 +154,7 @@ public class CustomerService
     public boolean update(Customer x)
     {
         if (x == null || x.getId() == null || blank(x.getCustomerName()))
-        {
             return false;
-        }
         Connection conn = null;
         try
         {
@@ -182,7 +172,6 @@ public class CustomerService
         {
             // 5. 异常时回滚。
             if (conn != null)
-            {
                 try
                 {
                     conn.rollback();
@@ -190,7 +179,6 @@ public class CustomerService
                 catch (Exception ignored)
                 {
                 }
-            }
             e.printStackTrace();
             return false;
         }
@@ -198,7 +186,6 @@ public class CustomerService
         {
             // 6. 关闭/归还连接。
             if (conn != null)
-            {
                 try
                 {
                     conn.close();
@@ -206,7 +193,6 @@ public class CustomerService
                 catch (Exception ignored)
                 {
                 }
-            }
         }
     }
 
@@ -229,7 +215,6 @@ public class CustomerService
         {
             // 5. 回滚。
             if (conn != null)
-            {
                 try
                 {
                     conn.rollback();
@@ -237,7 +222,6 @@ public class CustomerService
                 catch (Exception ignored)
                 {
                 }
-            }
             e.printStackTrace();
             return false;
         }
@@ -245,7 +229,6 @@ public class CustomerService
         {
             // 6. 关闭连接。
             if (conn != null)
-            {
                 try
                 {
                     conn.close();
@@ -253,7 +236,6 @@ public class CustomerService
                 catch (Exception ignored)
                 {
                 }
-            }
         }
     }
 
@@ -269,18 +251,17 @@ public class CustomerService
      */
     public boolean transfer(int id, int toUser, String reason)
     {
+        // 将只读查询放在事务连接获取之前，避免在事务持有期间占用独立连接。
+        Customer old = dao.findById(id, null, false);
+        if (old == null)
+            return false;
         Connection conn = null;
         try
         {
             // 1、2. 取连接并开启手动事务。
             conn = DbHelper.getDataSource().getConnection();
             conn.setAutoCommit(false);
-            // 3. 先查出原负责人，再修改客户，最后把前后负责人写入日志。
-            Customer old = dao.findById(id, null, false);
-            if (old == null)
-            {
-                throw new IllegalArgumentException("客户不存在");
-            }
+            // 3. 修改客户负责人，并把前后负责人写入审计日志。
             dao.transfer(conn, id, toUser);
             dao.saveTransfer(conn, id, old.getOwnerUserId(), toUser, reason);
             // 4. 两项写操作全部成功后再提交。
@@ -291,7 +272,6 @@ public class CustomerService
         {
             // 5. 任一写操作失败时回滚，避免出现“负责人改了但日志没写”。
             if (conn != null)
-            {
                 try
                 {
                     conn.rollback();
@@ -299,7 +279,6 @@ public class CustomerService
                 catch (Exception ignored)
                 {
                 }
-            }
             e.printStackTrace();
             return false;
         }
@@ -307,7 +286,6 @@ public class CustomerService
         {
             // 6. 关闭连接。
             if (conn != null)
-            {
                 try
                 {
                     conn.close();
@@ -315,7 +293,6 @@ public class CustomerService
                 catch (Exception ignored)
                 {
                 }
-            }
         }
     }
 

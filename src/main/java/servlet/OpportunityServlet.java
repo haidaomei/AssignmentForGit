@@ -46,10 +46,13 @@ public class OpportunityServlet extends BaseServlet
         }
         if (p == null || "/list".equals(p) || "/search".equals(p))
         {
-            PageBean<Opportunity> pb = service.page(intVal(req.getParameter("currentPage"), 1), 10, req.getParameter("stageId"), req.getParameter("businessStatus"), user(req));
+            // 统一去掉首尾空格；旧阶段和状态参数不会在这里读取，因此不会影响结果。
+            String keyword = keyword(req);
+            PageBean<Opportunity> pb = service.page(intVal(req.getParameter("currentPage"), 1), 10, keyword, user(req));
             req.setAttribute("pageBean", pb);
             req.setAttribute("opportunityList", pb.getData());
-            req.setAttribute("stageList", common.stages());
+            // 把原关键词交给 JSP 回显，用户翻页或查看结果时仍能看到当前搜索内容。
+            req.setAttribute("keyword", keyword);
             req.setAttribute("activeMenu", "opportunity");
             forward(req, resp, "/opportunity_list.jsp");
             return;
@@ -88,12 +91,8 @@ public class OpportunityServlet extends BaseServlet
             int stageId = intVal(req.getParameter("stageId"), 0);
             Lookup target = null;
             for (Lookup s : common.stages())
-            {
                 if (s.getId() == stageId)
-                {
                     target = s;
-                }
-            }
             ok = target != null && service.advance(intVal(req.getParameter("id"), 0), stageId, target.getProbability(), target.getName(), req.getParameter("reason"), user(req));
             flash(req, ok, "商机阶段已推进");
             redirect(req, resp, "/opportunity/detail?id=" + intVal(req.getParameter("id"), 0));
@@ -144,18 +143,12 @@ public class OpportunityServlet extends BaseServlet
         x.setEstimatedCloseDate(r.getParameter("estimatedCloseDate"));
         x.setOwnerUserId(integer(r.getParameter("ownerUserId")));
         if (x.getOwnerUserId() == null)
-        {
             x.setOwnerUserId(user(r).getId());
-        }
         x.setDescription(r.getParameter("description"));
         x.setResultReason(r.getParameter("resultReason"));
         for (Lookup s : common.stages())
-        {
             if (s.getId().equals(x.getStageId()))
-            {
                 x.setProbability(s.getProbability());
-            }
-        }
         x.setItems(readItems(r));
         return x;
     }
@@ -167,16 +160,12 @@ public class OpportunityServlet extends BaseServlet
         String[] prices = r.getParameterValues("items[][unitPrice]");
         List<LineItem> list = new ArrayList<>();
         if (products == null)
-        {
             return list;
-        }
         for (int i = 0; i < products.length; i++)
         {
             Integer pid = integer(products[i]);
             if (pid == null)
-            {
                 continue;
-            }
             LineItem x = new LineItem();
             x.setProductId(pid);
             x.setQuantity(intVal(quantities != null && i < quantities.length ? quantities[i] : null, 1));
@@ -189,20 +178,12 @@ public class OpportunityServlet extends BaseServlet
     private boolean allowed(HttpServletRequest req, Integer cid)
     {
         if (cid == null)
-        {
             return false;
-        }
         if (!user(req).isSales())
-        {
             return true;
-        }
         for (Customer c : customerService.all(user(req)))
-        {
             if (c.getId().equals(cid))
-            {
                 return true;
-            }
-        }
         return false;
     }
 }

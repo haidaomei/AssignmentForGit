@@ -18,19 +18,17 @@ public class ContractService
     /** 合同主表与产品明细 DAO。 */
     private final ContractDao dao = new ContractDao();
 
-    /** 按合同业务状态分页查询，并按当前用户限制数据范围。 */
-    public PageBean<Contract> page(int p, int size, String state, User u)
+    /** 按合同编号、名称或客户名称模糊分页查询，并按当前用户限制数据范围。 */
+    public PageBean<Contract> page(int p, int size, String keyword, User u)
     {
         // 页码不小于 1，非法每页数回退为 10。
         p = Math.max(1, p);
         size = size <= 0 ? 10 : size;
-        int total = dao.count(state, u.getId(), u.isSales());
+        int total = dao.count(keyword, u.getId(), u.isSales());
         int pages = (int) Math.ceil((double) total / size);
         if (pages > 0 && p > pages)
-        {
             p = pages;
-        }
-        return new PageBean<>(p, size, total, dao.page((p - 1) * size, size, state, u.getId(), u.isSales()));
+        return new PageBean<>(p, size, total, dao.page((p - 1) * size, size, keyword, u.getId(), u.isSales()));
     }
 
     /** 按主键查询合同及产品明细，DAO 会同时校验数据权限。 */
@@ -55,9 +53,7 @@ public class ContractService
     {
         // 短路逻辑或 || 会在任意条件不合法时立即返回 false。
         if (x == null || x.getContractName() == null || x.getContractName().isBlank() || !validItems(x.getItems()) || (x.getId() == null && x.getOpportunityId() != null && dao.existsForOpportunity(x.getOpportunityId())) || (notBlank(x.getStartDate()) && notBlank(x.getEndDate()) && x.getStartDate().compareTo(x.getEndDate()) > 0))
-        {
             return false;
-        }
         // 服务端根据单价和数量计算合同总额，防止前端金额被篡改。
         x.setContractAmount(total(x.getItems()));
         Connection conn = null;
@@ -79,16 +75,12 @@ public class ContractService
                 // 3b. 修改：更新主表，将原明细逻辑失效，准备写入新明细。
                 id = x.getId();
                 if (dao.update(conn, x) <= 0)
-                {
                     throw new IllegalStateException("合同不存在");
-                }
                 dao.deactivateItems(conn, id);
             }
             // 3c. 使用同一连接保存每条产品明细。
             for (LineItem item : x.getItems())
-            {
                 dao.saveItem(conn, id, item);
-            }
             // 4. 主表和所有明细均成功后提交。
             conn.commit();
             return true;
@@ -97,7 +89,6 @@ public class ContractService
         {
             // 5. 任一步异常都回滚，避免主从数据不完整。
             if (conn != null)
-            {
                 try
                 {
                     conn.rollback();
@@ -105,7 +96,6 @@ public class ContractService
                 catch (Exception ignored)
                 {
                 }
-            }
             e.printStackTrace();
             return false;
         }
@@ -113,7 +103,6 @@ public class ContractService
         {
             // 6. 关闭连接（对连接池而言就是把连接归还池中）。
             if (conn != null)
-            {
                 try
                 {
                     conn.close();
@@ -121,7 +110,6 @@ public class ContractService
                 catch (Exception ignored)
                 {
                 }
-            }
         }
     }
 
@@ -142,7 +130,6 @@ public class ContractService
         {
             // 5. 异常回滚。
             if (conn != null)
-            {
                 try
                 {
                     conn.rollback();
@@ -150,7 +137,6 @@ public class ContractService
                 catch (Exception ignored)
                 {
                 }
-            }
             e.printStackTrace();
             return false;
         }
@@ -158,7 +144,6 @@ public class ContractService
         {
             // 6. 关闭连接。
             if (conn != null)
-            {
                 try
                 {
                     conn.close();
@@ -166,7 +151,6 @@ public class ContractService
                 catch (Exception ignored)
                 {
                 }
-            }
         }
     }
 
@@ -178,13 +162,9 @@ public class ContractService
         for (LineItem i : items)
         {
             if (i.getQuantity() == null || i.getQuantity() <= 0)
-            {
                 i.setQuantity(1);
-            }
             if (i.getUnitPrice() == null)
-            {
                 i.setUnitPrice(BigDecimal.ZERO);
-            }
             i.setSubtotal(i.getUnitPrice().multiply(BigDecimal.valueOf(i.getQuantity())));
             t = t.add(i.getSubtotal());
         }
@@ -195,17 +175,11 @@ public class ContractService
     private boolean validItems(List<LineItem> items)
     {
         if (items == null || items.isEmpty())
-        {
             return false;
-        }
         java.util.Set<Integer> ids = new java.util.HashSet<>();
         for (LineItem i : items)
-        {
             if (i.getProductId() == null || !ids.add(i.getProductId()))
-            {
                 return false;
-            }
-        }
         return true;
     }
 
@@ -217,9 +191,3 @@ public class ContractService
         return value != null && !value.isBlank();
     }
 }
-// 计算总页数并校正越界页码。
-// 3. 将合同 status 更新为 0。
-// 4. 提交。
-// 数量缺失或非正数时按 1 计算，单价缺失时按 0 计算。
-// 小计 = 单价 × 数量，总额 = 各小计之和。
-// HashSet 不允许重复元素，add 返回 false 就代表发现重复产品。

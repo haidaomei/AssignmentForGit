@@ -44,7 +44,7 @@ public class ProductDao
     /** 统计名称模糊匹配的产品总数，用于计算分页页数。 */
     public int count(String keyword)
     {
-        Integer n = tpl.queryForObject("SELECT COUNT(*) FROM crm_product WHERE status=1 AND product_name LIKE ?", Integer.class, "%" + (keyword == null ? "" : keyword) + "%");
+        Integer n = tpl.queryForObject("SELECT COUNT(*) FROM crm_product WHERE status=1 AND product_name LIKE ?", Integer.class, "%" + (keyword == null ? "" : keyword.trim()) + "%");
         return n == null ? 0 : n;
     }
 
@@ -115,4 +115,3 @@ public class ProductDao
         }
     }
 }
-// 前后加 % 表示关键字可以出现在产品名称任意位置。

@@ -31,9 +31,3 @@ public class DashboardServlet extends BaseServlet
         forward(req, resp, "/dashboard.jsp");
     }
 }
-/** 跟进记录业务。 */
-/** GET 请求查询当前用户的仪表盘并转发到 JSP。 */
-// user(req) 从 Session 取当前用户，Service 会根据其角色限制数据范围。
-// 把 Java 对象或列表放入 request，供本次转发的 JSP 读取。
-// Gson 将 Java 列表序列化为 JSON 文本，前端 ECharts 可直接解析绘图。
-// activeMenu 用于让侧边栏高亮当前菜单。

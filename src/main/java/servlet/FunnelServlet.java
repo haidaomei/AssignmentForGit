@@ -29,8 +29,3 @@ public class FunnelServlet extends BaseServlet
         forward(req, resp, "/funnel_chart.jsp");
     }
 }
-/** 根据 format 参数决定返回 JSON 还是转发到漏斗 JSP。 */
-// Gson 将实体列表转成 JSON，可被 JavaScript/ECharts 使用。
-// format=json 时这是一个纯数据接口，不输出 HTML。
-// return 立即结束方法，防止后面又转发到 JSP。
-// 普通访问时把 JSON 放入页面，并高亮漏斗菜单。

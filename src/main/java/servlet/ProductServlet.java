@@ -22,10 +22,12 @@ public class ProductServlet extends BaseServlet
         String p = req.getPathInfo();
         if (p == null || "/list".equals(p) || "/search".equals(p))
         {
-            PageBean<Product> pb = service.page(intVal(req.getParameter("currentPage"), 1), 10, req.getParameter("keyword"));
+            // 规范化后的关键词用于参数化模糊查询，也会原样交给 JSP 显示。
+            String keyword = keyword(req);
+            PageBean<Product> pb = service.page(intVal(req.getParameter("currentPage"), 1), 10, keyword);
             req.setAttribute("pageBean", pb);
             req.setAttribute("productList", pb.getData());
-            req.setAttribute("keyword", req.getParameter("keyword"));
+            req.setAttribute("keyword", keyword);
             req.setAttribute("activeMenu", "product");
             forward(req, resp, "/product_list.jsp");
             return;
@@ -47,9 +49,7 @@ public class ProductServlet extends BaseServlet
         }
         boolean ok;
         if ("/delete".equals(req.getPathInfo()))
-        {
             ok = service.delete(intVal(req.getParameter("id"), 0));
-        }
         else
         {
             Product x = new Product();

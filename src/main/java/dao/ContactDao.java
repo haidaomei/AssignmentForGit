@@ -85,9 +85,9 @@ public class ContactDao
     /** 统计搜索结果数量；姓名和电话都支持模糊匹配。 */
     public int count(String keyword, Integer uid, boolean sales)
     {
-        String sql = "SELECT COUNT(*) FROM crm_contact ct JOIN crm_customer c ON ct.customer_id=c.id WHERE" + " ct.status=1 AND c.status=1 AND (ct.name LIKE ? OR ct.phone LIKE ?)" + scope(sales);
-        String k = "%" + (keyword == null ? "" : keyword) + "%";
-        Integer n = sales ? tpl.queryForObject(sql, Integer.class, k, k, uid) : tpl.queryForObject(sql, Integer.class, k, k);
+        String sql = "SELECT COUNT(*) FROM crm_contact ct JOIN crm_customer c ON ct.customer_id=c.id WHERE" + " ct.status=1 AND c.status=1 AND (ct.name LIKE ? OR ct.phone LIKE ? OR c.customer_name LIKE ?)" + scope(sales);
+        String k = "%" + (keyword == null ? "" : keyword.trim()) + "%";
+        Integer n = sales ? tpl.queryForObject(sql, Integer.class, k, k, k, uid) : tpl.queryForObject(sql, Integer.class, k, k, k);
         //queryforobj和query的区别是,编码者需要预知这条sql返回的是一张表还是一个元组
         //(虽然一个元组也算一张表 但是它们在tpl方法上就是有区别的)
         //当返回的只有一个元组,则用queryforobj
@@ -101,9 +101,9 @@ public class ContactDao
     /** 查询联系人分页数据，sales=true 时 SQL 会多绑定一个当前用户主键。 */
     public List<Contact> page(int offset, int size, String keyword, Integer uid, boolean sales)
     {
-        String sql = SELECT + "WHERE ct.status=1 AND c.status=1 AND (ct.name LIKE ? OR ct.phone LIKE ?)" + scope(sales) + " ORDER BY ct.create_time DESC LIMIT ?,?";
-        String k = "%" + (keyword == null ? "" : keyword) + "%";
-        return sales ? tpl.query(sql, mapper, k, k, uid, offset, size) : tpl.query(sql, mapper, k, k, offset, size);
+        String sql = SELECT + "WHERE ct.status=1 AND c.status=1 AND (ct.name LIKE ? OR ct.phone LIKE ? OR c.customer_name LIKE ?)" + scope(sales) + " ORDER BY ct.create_time DESC LIMIT ?,?";
+        String k = "%" + (keyword == null ? "" : keyword.trim()) + "%";
+        return sales ? tpl.query(sql, mapper, k, k, k, uid, offset, size) : tpl.query(sql, mapper, k, k, k, offset, size);
     }
 
     /** 查询某个有效客户下的全部有效联系人，主联系人排在最前面。 */

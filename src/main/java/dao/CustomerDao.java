@@ -169,9 +169,7 @@ public class CustomerDao
     {
         // i++ 表示先使用当前序号，再把序号加 1，正好依次对应 SQL 的问号。
         if (withNo)
-        {
             p.setString(i++, c.getCustomerNo());
-        }
         p.setString(i++, c.getCustomerName());
         p.setString(i++, c.getIndustry());
         p.setString(i++, c.getScale());
@@ -190,13 +188,9 @@ public class CustomerDao
     private void setInt(PreparedStatement p, int i, Integer v) throws SQLException
     {
         if (v == null)
-        {
             p.setNull(i, Types.INTEGER);
-        }
         else
-        {
             p.setInt(i, v);
-        }
     }
 
     /** 逻辑删除：status=0 后列表 SQL 的 c.status=1 会自动将其隐藏。 */
