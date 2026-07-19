@@ -2,10 +2,12 @@ package servlet;
 
 import entity.Customer;
 import entity.PageBean;
+
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
+
 import service.CommonService;
 import service.CustomerService;
 
@@ -18,10 +20,14 @@ import service.CustomerService;
 @WebServlet("/customer/*")
 public class CustomerServlet extends BaseServlet
 {
-    /** 客户业务层，处理查询、保存、逻辑删除和转移。 */
+    /**
+     * 客户业务层，处理查询、保存、逻辑删除和转移。
+     */
     private final CustomerService service = new CustomerService();
 
-    /** 通用下拉选项业务，提供等级、来源和负责人。 */
+    /**
+     * 通用下拉选项业务，提供等级、来源和负责人。
+     */
     private final CommonService common = new CommonService();
 
     @Override
@@ -32,15 +38,25 @@ public class CustomerServlet extends BaseServlet
         try
         {
             if (p == null || "/list".equals(p) || "/search".equals(p))
+            {
                 list(req, resp);
+            }
             else if ("/add".equals(p))
+            {
                 form(req, resp, null);
+            }
             else if ("/edit".equals(p))
+            {
                 form(req, resp, service.get(intVal(req.getParameter("id"), 0), user(req)));
+            }
             else if ("/detail".equals(p))
+            {
                 detail(req, resp);
+            }
             else
+            {
                 list(req, resp);
+            }
         }
         catch (Exception e)
         {
@@ -130,13 +146,17 @@ public class CustomerServlet extends BaseServlet
         x.setSourceId(integer(r.getParameter("sourceId")));
         x.setOwnerUserId(integer(r.getParameter("ownerUserId")));
         if (x.getOwnerUserId() == null)
+        {
             x.setOwnerUserId(user(r).getId());
+        }
         x.setCreditRating(r.getParameter("creditRating"));
         x.setDescription(r.getParameter("description"));
         return x;
     }
 }
-/** GET 根据 pathInfo 分派到列表、表单或详情页。 */
+/**
+ * GET 根据 pathInfo 分派到列表、表单或详情页。
+ */
 // 例如访问 /customer/edit 时，p 的值是 /edit。
 // 无子路径、/list 和 /search 都进入同一个分页查询。
 // 新增表单传 null；编辑表单先按 id 和当前用户权限查出数据。

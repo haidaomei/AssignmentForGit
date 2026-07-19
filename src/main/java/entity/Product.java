@@ -11,13 +11,19 @@ import java.math.BigDecimal;
  */
 public class Product
 {
-    /** 数据库主键和上架状态：1 为上架，0 为下架。 */
+    /**
+     * 数据库主键和上架状态：1 为上架，0 为下架。
+     */
     private Integer id, status;
 
-    /** 产品名称、分类、计量单位、说明及格式化后的创建日期。 */
+    /**
+     * 产品名称、分类、计量单位、说明及格式化后的创建日期。
+     */
     private String productName, category, unit, description, createTime;
 
-    /** 标准单价，使用十进制精确类型。 */
+    /**
+     * 标准单价，使用十进制精确类型。
+     */
     private BigDecimal unitPrice;
 
     // 标准 JavaBean getter/setter。

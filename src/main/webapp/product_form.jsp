@@ -1,8 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8"%><%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%><!DOCTYPE html>
 <html lang="zh-CN">
-<head><jsp:include page="header.jsp" /></head>
-<body class="hold-transition sidebar-mini">
-	<div class="wrapper"><jsp:include page="navbar.jsp" /><jsp:include page="sidebar.jsp" /><div class="content-wrapper">
+	<head><jsp:include page="header.jsp" /></head>
+	<body class="hold-transition sidebar-mini">
+		<div class="wrapper"><jsp:include page="navbar.jsp" /><jsp:include page="sidebar.jsp" /><div class="content-wrapper">
 			<div class="content-header">
 				<div class="container-fluid">
 					<h1>${empty product?'新增产品':'编辑产品'}</h1>
@@ -22,9 +22,9 @@
 									<div class="form-group col-md-3">
 										<label>分类</label>
 										<select name="category" class="form-control">
-											<c:forEach items="${['软件','硬件','服务','咨询']}" var="v">
+											<c:forTokens items="软件,硬件,服务,咨询" delims="," var="v">
 												<option ${product.category==v?'selected':''}>${v}</option>
-											</c:forEach>
+											</c:forTokens>
 										</select>
 									</div>
 									<div class="form-group col-md-3">
@@ -53,4 +53,4 @@
 				</div>
 			</section>
 		</div><jsp:include page="footer.jsp" /></div><jsp:include page="scripts.jsp" /></body>
-</html>
+	</html>

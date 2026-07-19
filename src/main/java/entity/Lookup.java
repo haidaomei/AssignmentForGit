@@ -9,27 +9,41 @@ package entity;
  */
 public class Lookup
 {
-    /** 字典记录主键。 */
+    /**
+     * 字典记录主键。
+     */
     private Integer id;
 
-    /** 页面显示的中文名称。 */
+    /**
+     * 页面显示的中文名称。
+     */
     private String name;
 
-    /** 程序使用的稳定英文编码。 */
+    /**
+     * 程序使用的稳定英文编码。
+     */
     private String code;
 
-    /** 数字越小越靠前。 */
+    /**
+     * 数字越小越靠前。
+     */
     private Integer sortOrder;
 
-    /** 商机阶段对应的默认成交概率。 */
+    /**
+     * 商机阶段对应的默认成交概率。
+     */
     private Integer probability;
 
-    /** 无参构造器是 JavaBean 规范的一部分，框架创建对象时会使用它。 */
+    /**
+     * 无参构造器是 JavaBean 规范的一部分，框架创建对象时会使用它。
+     */
     public Lookup()
     {
     }
 
-    /** 便捷构造器：只有主键和名称时可以一次完成赋值。 */
+    /**
+     * 便捷构造器：只有主键和名称时可以一次完成赋值。
+     */
     public Lookup(Integer id, String name)
     {
         this.id = id;

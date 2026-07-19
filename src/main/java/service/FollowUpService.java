@@ -5,8 +5,10 @@ import dao.FollowUpDao;
 import entity.FollowUp;
 import entity.PageBean;
 import entity.User;
+
 import java.sql.Connection;
 import java.util.List;
+
 import util.DbHelper;
 
 /**
@@ -17,13 +19,19 @@ import util.DbHelper;
  */
 public class FollowUpService
 {
-    /** 跟进记录 DAO。 */
+    /**
+     * 跟进记录 DAO。
+     */
     private final FollowUpDao dao = new FollowUpDao();
 
-    /** 用于更新客户的最后跟进时间。 */
+    /**
+     * 用于更新客户的最后跟进时间。
+     */
     private final CustomerDao customerDao = new CustomerDao();
 
-    /** 按客户、商机、联系人或跟进内容模糊查询分页，并应用当前用户的数据范围。 */
+    /**
+     * 按客户、商机、联系人或跟进内容模糊查询分页，并应用当前用户的数据范围。
+     */
     public PageBean<FollowUp> page(int p, int size, String keyword, User u)
     {
         // 修正非法页码和每页大小。
@@ -32,7 +40,9 @@ public class FollowUpService
         int total = dao.count(keyword, u.getId(), u.isSales());
         int pages = (int) Math.ceil((double) total / size);
         if (pages > 0 && p > pages)
+        {
             p = pages;
+        }
         return new PageBean<>(p, size, total, dao.page((p - 1) * size, size, keyword, u.getId(), u.isSales()));
     }
 
@@ -68,18 +78,24 @@ public class FollowUpService
         return dao.today(u.getId(), u.isSales());
     }
 
-    /** 判断当前用户是否可以访问某条跟进，用于修改或删除前的权限防护。 */
+    /**
+     * 判断当前用户是否可以访问某条跟进，用于修改或删除前的权限防护。
+     */
     public boolean accessible(int id, User u)
     {
         return dao.accessible(id, u.getId(), u.isSales());
     }
 
-    /** 新增跟进记录，同时更新客户最后跟进时间。 */
+    /**
+     * 新增跟进记录，同时更新客户最后跟进时间。
+     */
     public boolean add(FollowUp x)
     {
         // 客户和跟进内容是最低必填项；校验失败时不打开数据库连接。
         if (x == null || x.getCustomerId() == null || x.getFollowContent() == null || x.getFollowContent().isBlank())
+        {
             return false;
+        }
         Connection conn = null;
         try
         {
@@ -98,6 +114,7 @@ public class FollowUpService
         {
             // 5. 失败时回滚两条 SQL。
             if (conn != null)
+            {
                 try
                 {
                     conn.rollback();
@@ -105,6 +122,7 @@ public class FollowUpService
                 catch (Exception ignored)
                 {
                 }
+            }
             e.printStackTrace();
             return false;
         }
@@ -112,6 +130,7 @@ public class FollowUpService
         {
             // 6. 归还连接。
             if (conn != null)
+            {
                 try
                 {
                     conn.close();
@@ -119,10 +138,13 @@ public class FollowUpService
                 catch (Exception ignored)
                 {
                 }
+            }
         }
     }
 
-    /** 逻辑删除跟进记录，即把 status 更新为 0。 */
+    /**
+     * 逻辑删除跟进记录，即把 status 更新为 0。
+     */
     public boolean delete(int id)
     {
         Connection conn = null;
@@ -139,6 +161,7 @@ public class FollowUpService
         {
             // 5. 异常回滚。
             if (conn != null)
+            {
                 try
                 {
                     conn.rollback();
@@ -146,6 +169,7 @@ public class FollowUpService
                 catch (Exception ignored)
                 {
                 }
+            }
             e.printStackTrace();
             return false;
         }
@@ -153,6 +177,7 @@ public class FollowUpService
         {
             // 6. 关闭连接。
             if (conn != null)
+            {
                 try
                 {
                     conn.close();
@@ -160,6 +185,7 @@ public class FollowUpService
                 catch (Exception ignored)
                 {
                 }
+            }
         }
     }
 }

@@ -2,18 +2,24 @@ package servlet;
 
 import com.google.gson.Gson;
 import entity.DashboardStats;
+
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
+
 import service.DashboardService;
 import service.FollowUpService;
 
-/** 仪表盘 Servlet，一次准备统计卡片、最近跟进、今日提醒和漏斗图数据。 */
+/**
+ * 仪表盘 Servlet，一次准备统计卡片、最近跟进、今日提醒和漏斗图数据。
+ */
 @WebServlet("/dashboard")
 public class DashboardServlet extends BaseServlet
 {
-    /** 统计与漏斗业务。 */
+    /**
+     * 统计与漏斗业务。
+     */
     private final DashboardService service = new DashboardService();
 
     private final FollowUpService followService = new FollowUpService();

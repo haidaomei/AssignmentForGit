@@ -1,8 +1,10 @@
 package dao;
 
 import entity.FollowUp;
+
 import java.sql.*;
 import java.util.List;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import util.DbHelper;
@@ -17,16 +19,24 @@ import util.DbHelper;
  */
 public class FollowUpDao
 {
-    /** 查询工具。 */
+    /**
+     * 查询工具。
+     */
     private final JdbcTemplate tpl = DbHelper.getJdbcTemplate();
 
-    /** 共用 SELECT 列和计算字段。 */
+    /**
+     * 共用 SELECT 列和计算字段。
+     */
     private static final String SELECT = "SELECT f.*,c.customer_name,o.title opportunity_title,ct.name contact_name,u.real_name" + " follow_user_name,DATE_FORMAT(f.follow_time,'%Y-%m-%d %H:%i')" + " followed,DATE_FORMAT(f.next_follow_time,'%Y-%m-%d %H:%i')" + " next_follow,DATE_FORMAT(f.create_time,'%Y-%m-%d') created,IF(f.next_follow_time<NOW()" + " AND f.is_reminded=0,1,0) overdue ";
 
-    /** 客户是必选所以 JOIN，商机和联系人是可选所以 LEFT JOIN。 */
+    /**
+     * 客户是必选所以 JOIN，商机和联系人是可选所以 LEFT JOIN。
+     */
     private static final String FROM = " FROM crm_follow_up_record f JOIN crm_customer c ON f.customer_id=c.id LEFT JOIN" + " crm_business_opportunity o ON f.opportunity_id=o.id LEFT JOIN crm_contact ct ON" + " f.contact_id=ct.id LEFT JOIN sys_user u ON f.follow_user_id=u.id ";
 
-    /** 把一行关联查询结果装入 FollowUp。 */
+    /**
+     * 把一行关联查询结果装入 FollowUp。
+     */
     private final RowMapper<FollowUp> mapper = new RowMapper<FollowUp>()
     {
         @Override
@@ -62,7 +72,9 @@ public class FollowUpDao
         return sales ? " AND c.owner_user_id=? " : "";
     }
 
-    /** 返回客户、商机、联系人和跟进内容四个字段的模糊搜索 SQL 片段。 */
+    /**
+     * 返回客户、商机、联系人和跟进内容四个字段的模糊搜索 SQL 片段。
+     */
     private String keywordFilter(String keyword)
     {
         return keyword == null || keyword.isBlank() ? "" : " AND (c.customer_name LIKE ? OR o.title LIKE ? OR ct.name LIKE ? OR" + " f.follow_content LIKE ?)";
@@ -81,12 +93,16 @@ public class FollowUpDao
             a.add(like);
         }
         if (sales)
+        {
             a.add(uid);
+        }
         java.util.Collections.addAll(a, tail);
         return a.toArray();
     }
 
-    /** 统计模糊搜索结果总数。 */
+    /**
+     * 统计模糊搜索结果总数。
+     */
     public int count(String keyword, Integer uid, boolean sales)
     {
         String sql = "SELECT COUNT(*)" + FROM + " WHERE f.status=1 AND c.status=1" + keywordFilter(keyword) + scope(sales);
@@ -94,40 +110,52 @@ public class FollowUpDao
         return n == null ? 0 : n;
     }
 
-    /** 按关键词查询跟进记录分页列表。 */
+    /**
+     * 按关键词查询跟进记录分页列表。
+     */
     public List<FollowUp> page(int offset, int size, String keyword, Integer uid, boolean sales)
     {
         String sql = SELECT + FROM + " WHERE f.status=1 AND c.status=1" + keywordFilter(keyword) + scope(sales) + " ORDER BY f.follow_time DESC LIMIT ?,?";
         return tpl.query(sql, mapper, args(keyword, uid, sales, offset, size));
     }
 
-    /** 查询某客户的全部有效跟进，供客户详情时间线使用。 */
+    /**
+     * 查询某客户的全部有效跟进，供客户详情时间线使用。
+     */
     public List<FollowUp> byCustomer(int id)
     {
         return tpl.query(SELECT + FROM + " WHERE f.status=1 AND c.status=1 AND f.customer_id=? ORDER BY f.follow_time DESC", mapper, id);
     }
 
-    /** 查询某商机的全部有效跟进，供商机详情时间线使用。 */
+    /**
+     * 查询某商机的全部有效跟进，供商机详情时间线使用。
+     */
     public List<FollowUp> byOpportunity(int id)
     {
         return tpl.query(SELECT + FROM + " WHERE f.status=1 AND c.status=1 AND f.opportunity_id=? ORDER BY f.follow_time DESC", mapper, id);
     }
 
-    /** 查询最近 limit 条跟进，仪表盘默认传入 5。 */
+    /**
+     * 查询最近 limit 条跟进，仪表盘默认传入 5。
+     */
     public List<FollowUp> latest(Integer uid, boolean sales, int limit)
     {
         String sql = SELECT + FROM + " WHERE f.status=1 AND c.status=1" + scope(sales) + " ORDER BY f.follow_time DESC LIMIT ?";
         return sales ? tpl.query(sql, mapper, uid, limit) : tpl.query(sql, mapper, limit);
     }
 
-    /** 查询计划跟进日期等于今天且尚未提醒的记录。 */
+    /**
+     * 查询计划跟进日期等于今天且尚未提醒的记录。
+     */
     public List<FollowUp> today(Integer uid, boolean sales)
     {
         String sql = SELECT + FROM + " WHERE f.status=1 AND c.status=1 AND DATE(f.next_follow_time)=CURDATE() AND" + " f.is_reminded=0" + scope(sales) + " ORDER BY f.next_follow_time";
         return sales ? tpl.query(sql, mapper, uid) : tpl.query(sql, mapper);
     }
 
-    /** 插入跟进记录；关联商机、联系人和下次时间都允许为空。 */
+    /**
+     * 插入跟进记录；关联商机、联系人和下次时间都允许为空。
+     */
     public int save(Connection conn, FollowUp x) throws SQLException
     {
         String sql = "INSERT INTO" + " crm_follow_up_record(customer_id,opportunity_id,contact_id,follow_type,follow_content,customer_feedback,next_plan,next_follow_time,follow_user_id,follow_time,is_reminded,status)" + " VALUES(?,?,?,?,?,?,?,?,?,?,0,1)";
@@ -147,7 +175,9 @@ public class FollowUpDao
         }
     }
 
-    /** 检查当前用户是否有权操作指定跟进记录，用于防止构造 URL 越权删除。 */
+    /**
+     * 检查当前用户是否有权操作指定跟进记录，用于防止构造 URL 越权删除。
+     */
     public boolean accessible(int id, Integer uid, boolean sales)
     {
         String sql = "SELECT COUNT(*) FROM crm_follow_up_record f JOIN crm_customer c ON f.customer_id=c.id" + " WHERE f.id=? AND f.status=1 AND c.status=1" + scope(sales);
@@ -155,22 +185,32 @@ public class FollowUpDao
         return n != null && n > 0;
     }
 
-    /** 把 HTML datetime-local 的空白值转换为数据库 null。 */
+    /**
+     * 把 HTML datetime-local 的空白值转换为数据库 null。
+     */
     private String blankNull(String s)
     {
         return s == null || s.isBlank() ? null : s;
     }
 
-    /** 绑定可空外键。 */
+    /**
+     * 绑定可空外键。
+     */
     private void setInt(PreparedStatement p, int i, Integer v) throws SQLException
     {
         if (v == null)
+        {
             p.setNull(i, Types.INTEGER);
+        }
         else
+        {
             p.setInt(i, v);
+        }
     }
 
-    /** 逻辑删除跟进记录。 */
+    /**
+     * 逻辑删除跟进记录。
+     */
     public int updateStatus(Connection conn, int id, int status) throws SQLException
     {
         try (PreparedStatement p = conn.prepareStatement("UPDATE crm_follow_up_record SET status=?,update_time=NOW() WHERE id=?"))

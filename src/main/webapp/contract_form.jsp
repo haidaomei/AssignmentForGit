@@ -1,8 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8"%><%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%><!DOCTYPE html>
 <html lang="zh-CN">
-<head><jsp:include page="header.jsp" /></head>
-<body class="hold-transition sidebar-mini">
-	<div class="wrapper"><jsp:include page="navbar.jsp" /><jsp:include page="sidebar.jsp" /><div class="content-wrapper">
+	<head><jsp:include page="header.jsp" /></head>
+	<body class="hold-transition sidebar-mini">
+		<div class="wrapper"><jsp:include page="navbar.jsp" /><jsp:include page="sidebar.jsp" /><div class="content-wrapper">
 			<div class="content-header">
 				<div class="container-fluid">
 					<h1>${empty contract.id?'新增合同':'编辑合同'}</h1>
@@ -34,9 +34,9 @@
 									<div class="form-group col-md-3">
 										<label>业务状态</label>
 										<select name="businessStatus" class="form-control">
-											<c:forEach items="${['执行中','已到期','已终止']}" var="v">
+											<c:forTokens items="执行中,已到期,已终止" delims="," var="v">
 												<option ${contract.businessStatus==v?'selected':''}>${v}</option>
-											</c:forEach>
+											</c:forTokens>
 										</select>
 									</div>
 									<input type="hidden" name="opportunityId" value="${contract.opportunityId}">

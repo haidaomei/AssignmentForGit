@@ -2,7 +2,9 @@ package service;
 
 import dao.UserDao;
 import entity.User;
+
 import java.sql.Connection;
+
 import util.DbHelper;
 
 /**
@@ -13,25 +15,35 @@ import util.DbHelper;
  */
 public class LoginService
 {
-    /** 业务层持有 DAO，通过它访问 sys_user 表。 */
+    /**
+     * 业务层持有 DAO，通过它访问 sys_user 表。
+     */
     private final UserDao dao = new UserDao();
 
-    /** 校验非空后查询账号；成功返回 User，失败返回 null。 */
+    /**
+     * 校验非空后查询账号；成功返回 User，失败返回 null。
+     */
     public User login(String username, String password)
     {
         // 提前返回可以避免无意义的数据库查询。
         if (blank(username) || blank(password))
+        {
             return null;
+        }
         // 用户名去掉首尾空格，密码不能 trim，因为空格可能本来就是密码的一部分。
         return dao.findForLogin(username.trim(), password);
     }
 
-    /** 注册新销售员。任何一步失败都回滚，保证不会留下半条数据。 */
+    /**
+     * 注册新销售员。任何一步失败都回滚，保证不会留下半条数据。
+     */
     public boolean register(User user)
     {
         // 依次检查对象、必填项、密码长度和用户名唯一性；不满足要求时不访问写接口。
         if (user == null || blank(user.getUsername()) || blank(user.getPassword()) || user.getPassword().length() < 6 || blank(user.getRealName()) || dao.exists(user.getUsername()))
+        {
             return false;
+        }
         Connection conn = null;
         try
         {
@@ -49,6 +61,7 @@ public class LoginService
         {
             // 事务步骤 5：任意异常都撤销本事务已经执行的 SQL。
             if (conn != null)
+            {
                 try
                 {
                     conn.rollback();
@@ -56,6 +69,7 @@ public class LoginService
                 catch (Exception ignored)
                 {
                 }
+            }
             e.printStackTrace();
             return false;
         }
@@ -63,6 +77,7 @@ public class LoginService
         {
             // 事务步骤 6：无论成功失败都关闭连接；对连接池而言是“归还连接”。
             if (conn != null)
+            {
                 try
                 {
                     conn.close();
@@ -70,10 +85,13 @@ public class LoginService
                 catch (Exception ignored)
                 {
                 }
+            }
         }
     }
 
-    /** 同时识别 null、空串以及只包含空格的字符串。 */
+    /**
+     * 同时识别 null、空串以及只包含空格的字符串。
+     */
     private boolean blank(String s)
     {
         return s == null || s.trim().isEmpty();

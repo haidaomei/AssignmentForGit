@@ -3,6 +3,7 @@ package servlet;
 import java.io.IOException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
+
 import util.CheckCodeUtil;
 
 /**
@@ -15,7 +16,9 @@ import util.CheckCodeUtil;
 @WebServlet("/checkCodeServlet")
 public class CheckCodeServlet extends HttpServlet
 {
-    /** GET 请求用于生成一张新验证码。 */
+    /**
+     * GET 请求用于生成一张新验证码。
+     */
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException
     {

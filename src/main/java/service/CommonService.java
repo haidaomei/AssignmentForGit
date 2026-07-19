@@ -4,6 +4,7 @@ import dao.LookupDao;
 import dao.UserDao;
 import entity.Lookup;
 import entity.User;
+
 import java.util.List;
 
 /**
@@ -16,10 +17,14 @@ import java.util.List;
  */
 public class CommonService
 {
-    /** 字典 DAO：负责查询等级、来源和阶段这类固定选项。 */
+    /**
+     * 字典 DAO：负责查询等级、来源和阶段这类固定选项。
+     */
     private final LookupDao lookupDao = new LookupDao();
 
-    /** 用户 DAO：负责查询可作为客户负责人的正常用户。 */
+    /**
+     * 用户 DAO：负责查询可作为客户负责人的正常用户。
+     */
     private final UserDao userDao = new UserDao();
 
     /**

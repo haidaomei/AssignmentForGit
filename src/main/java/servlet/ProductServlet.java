@@ -2,17 +2,23 @@ package servlet;
 
 import entity.PageBean;
 import entity.Product;
+
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
+
 import service.ProductService;
 
-/** 产品管理 Servlet，处理分页搜索、新增、修改和逻辑删除。 */
+/**
+ * 产品管理 Servlet，处理分页搜索、新增、修改和逻辑删除。
+ */
 @WebServlet("/product/*")
 public class ProductServlet extends BaseServlet
 {
-    /** 产品业务层。本 Servlet 还会被 AuthorizationFilter 限制为管理员/销售经理访问。 */
+    /**
+     * 产品业务层。本 Servlet 还会被 AuthorizationFilter 限制为管理员/销售经理访问。
+     */
     private final ProductService service = new ProductService();
 
     @Override
@@ -49,7 +55,9 @@ public class ProductServlet extends BaseServlet
         }
         boolean ok;
         if ("/delete".equals(req.getPathInfo()))
+        {
             ok = service.delete(intVal(req.getParameter("id"), 0));
+        }
         else
         {
             Product x = new Product();
@@ -65,7 +73,9 @@ public class ProductServlet extends BaseServlet
         redirect(req, resp, "/product/list");
     }
 }
-/** GET 处理列表、搜索和表单页。 */
+/**
+ * GET 处理列表、搜索和表单页。
+ */
 // 列表与搜索共用同一分页查询，每页 10 条。
 // 把分页对象、当页数据和关键词放入 request 供 JSP 使用。
 // /edit 时查询原产品用于回显，/add 时传入 null 表示空表单。

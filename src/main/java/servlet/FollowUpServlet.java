@@ -3,15 +3,19 @@ package servlet;
 import entity.Customer;
 import entity.FollowUp;
 import entity.PageBean;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
+
 import service.*;
 
-/** 跟进记录 Servlet，处理条件分页、新增跟进、下次提醒和逻辑删除。 */
+/**
+ * 跟进记录 Servlet，处理条件分页、新增跟进、下次提醒和逻辑删除。
+ */
 @WebServlet("/follow/*")
 public class FollowUpServlet extends BaseServlet
 {
@@ -56,7 +60,9 @@ public class FollowUpServlet extends BaseServlet
         }
         boolean ok;
         if ("/delete".equals(req.getPathInfo()))
+        {
             ok = service.delete(intVal(req.getParameter("id"), 0));
+        }
         else
         {
             FollowUp x = new FollowUp();
@@ -71,7 +77,9 @@ public class FollowUpServlet extends BaseServlet
             x.setFollowUserId(user(req).getId());
             x.setFollowTime(normalize(req.getParameter("followTime")));
             if (x.getFollowTime() == null)
+            {
                 x.setFollowTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+            }
             ok = allowed(req, x.getCustomerId()) && service.add(x);
         }
         flash(req, ok, "跟进记录保存成功");
@@ -86,16 +94,26 @@ public class FollowUpServlet extends BaseServlet
     private boolean allowed(HttpServletRequest req, Integer cid)
     {
         if (cid == null)
+        {
             return false;
+        }
         if (!user(req).isSales())
+        {
             return true;
+        }
         for (Customer c : customerService.all(user(req)))
+        {
             if (c.getId().equals(cid))
+            {
                 return true;
+            }
+        }
         return false;
     }
 }
-/** GET 处理分页列表或新增表单。 */
+/**
+ * GET 处理分页列表或新增表单。
+ */
 // 列表支持跟进类型、开始日期和结束日期筛选。
 // 表单页加载当前用户可见客户，并支持通过 URL 预选客户/商机。
 /** POST 处理逻辑删除或保存一条新跟进。 */

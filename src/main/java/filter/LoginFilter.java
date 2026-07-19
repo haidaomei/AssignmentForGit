@@ -20,7 +20,19 @@ import javax.servlet.http.HttpServletResponse;
 @WebFilter("/*")
 public class LoginFilter implements Filter
 {
-    /** 检查当前请求是否属于白名单或已经登录。 */
+    @Override
+    public void init(javax.servlet.FilterConfig filterConfig)
+    {
+    }
+
+    @Override
+    public void destroy()
+    {
+    }
+
+    /**
+     * 检查当前请求是否属于白名单或已经登录。
+     */
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException
     {

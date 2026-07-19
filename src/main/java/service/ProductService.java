@@ -3,17 +3,25 @@ package service;
 import dao.ProductDao;
 import entity.PageBean;
 import entity.Product;
+
 import java.sql.Connection;
 import java.util.List;
+
 import util.DbHelper;
 
-/** 产品业务层：处理分页、表单校验、事务保存和逻辑下架。 */
+/**
+ * 产品业务层：处理分页、表单校验、事务保存和逻辑下架。
+ */
 public class ProductService
 {
-    /** 产品 DAO。 */
+    /**
+     * 产品 DAO。
+     */
     private final ProductDao dao = new ProductDao();
 
-    /** 查询产品分页，页码越界时自动修正。 */
+    /**
+     * 查询产品分页，页码越界时自动修正。
+     */
     public PageBean<Product> page(int p, int size, String keyword)
     {
         p = Math.max(1, p);
@@ -21,28 +29,38 @@ public class ProductService
         int total = dao.count(keyword);
         int pages = (int) Math.ceil((double) total / size);
         if (pages > 0 && p > pages)
+        {
             p = pages;
+        }
         return new PageBean<>(p, size, total, dao.page((p - 1) * size, size, keyword));
     }
 
-    /** 查询所有上架产品，供产品明细下拉框使用。 */
+    /**
+     * 查询所有上架产品，供产品明细下拉框使用。
+     */
     public List<Product> all()
     {
         return dao.all();
     }
 
-    /** 查询一个产品；不存在时 DAO 返回 null。 */
+    /**
+     * 查询一个产品；不存在时 DAO 返回 null。
+     */
     public Product get(int id)
     {
         return dao.findById(id);
     }
 
-    /** 新增或编辑产品，id 是否为空决定调用哪个 DAO 方法。 */
+    /**
+     * 新增或编辑产品，id 是否为空决定调用哪个 DAO 方法。
+     */
     public boolean save(Product x)
     {
         // 产品名称是最基本的业务必填项。
         if (x == null || x.getProductName() == null || x.getProductName().isBlank())
+        {
             return false;
+        }
         Connection conn = null;
         try
         {
@@ -60,6 +78,7 @@ public class ProductService
         {
             // 事务步骤 5：异常回滚。
             if (conn != null)
+            {
                 try
                 {
                     conn.rollback();
@@ -67,6 +86,7 @@ public class ProductService
                 catch (Exception ignored)
                 {
                 }
+            }
             e.printStackTrace();
             return false;
         }
@@ -74,6 +94,7 @@ public class ProductService
         {
             // 事务步骤 6：归还连接。
             if (conn != null)
+            {
                 try
                 {
                     conn.close();
@@ -81,10 +102,13 @@ public class ProductService
                 catch (Exception ignored)
                 {
                 }
+            }
         }
     }
 
-    /** 逻辑下架产品。历史明细中的产品名称快照不会消失。 */
+    /**
+     * 逻辑下架产品。历史明细中的产品名称快照不会消失。
+     */
     public boolean delete(int id)
     {
         Connection conn = null;
@@ -103,6 +127,7 @@ public class ProductService
         {
             // 事务步骤 5。
             if (conn != null)
+            {
                 try
                 {
                     conn.rollback();
@@ -110,6 +135,7 @@ public class ProductService
                 catch (Exception ignored)
                 {
                 }
+            }
             e.printStackTrace();
             return false;
         }
@@ -117,6 +143,7 @@ public class ProductService
         {
             // 事务步骤 6。
             if (conn != null)
+            {
                 try
                 {
                     conn.close();
@@ -124,6 +151,7 @@ public class ProductService
                 catch (Exception ignored)
                 {
                 }
+            }
         }
     }
 }

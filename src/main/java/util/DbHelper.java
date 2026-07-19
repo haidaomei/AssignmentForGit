@@ -1,8 +1,10 @@
 package util;
 
 import com.alibaba.druid.pool.DruidDataSource;
+
 import java.io.InputStream;
 import java.util.Properties;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
@@ -15,10 +17,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
  */
 public final class DbHelper
 {
-    /** 全局唯一的 Druid 连接池。static 表示它属于类，而不是某一个 DbHelper 对象。 */
+    /**
+     * 全局唯一的 Druid 连接池。static 表示它属于类，而不是某一个 DbHelper 对象。
+     */
     private static DruidDataSource dataSource;
 
-    /** 基于同一连接池创建的查询工具，所有 DAO 共用。 */
+    /**
+     * 基于同一连接池创建的查询工具，所有 DAO 共用。
+     */
     private static JdbcTemplate jdbcTemplate;
 
     // 静态代码块在 DbHelper 第一次被使用时只执行一次，用来完成全部数据库初始化工作。
@@ -34,7 +40,9 @@ public final class DbHelper
             {
                 // 如果返回 null，说明配置文件没有被打包或名称写错，应立即终止启动并给出明确提示。
                 if (is == null)
+                {
                     throw new RuntimeException("找不到 jdbc.properties 文件");
+                }
                 // 把配置文件中的每一项加载到 props 对象。
                 props.load(is);
             }
@@ -64,18 +72,24 @@ public final class DbHelper
         }
     }
 
-    /** 工具类只提供静态方法，不应该被 new，所以构造器设为 private。 */
+    /**
+     * 工具类只提供静态方法，不应该被 new，所以构造器设为 private。
+     */
     private DbHelper()
     {
     }
 
-    /** 返回查询专用 JdbcTemplate；DAO 的 SELECT 方法调用它。 */
+    /**
+     * 返回查询专用 JdbcTemplate；DAO 的 SELECT 方法调用它。
+     */
     public static JdbcTemplate getJdbcTemplate()
     {
         return jdbcTemplate;
     }
 
-    /** 返回原始连接池；Service 的写方法用它获取同一个事务连接。 */
+    /**
+     * 返回原始连接池；Service 的写方法用它获取同一个事务连接。
+     */
     public static DruidDataSource getDataSource()
     {
         return dataSource;

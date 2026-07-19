@@ -10,10 +10,14 @@ package entity;
  */
 public class Contact
 {
-    /** 主键、所属客户、两个布尔标志和逻辑删除状态。 */
+    /**
+     * 主键、所属客户、两个布尔标志和逻辑删除状态。
+     */
     private Integer id, customerId, isPrimary, isDecisionMaker, status;
 
-    /** 姓名、联系方式、职位、备注以及格式化后的创建时间。 */
+    /**
+     * 姓名、联系方式、职位、备注以及格式化后的创建时间。
+     */
     private String name, customerName, gender, position, phone, email, wechat, hobby, remarks, createTime;
 
     // 以下方法遵循 JavaBean 规范，使 JdbcTemplate 映射和 JSP EL 能统一访问这些属性。

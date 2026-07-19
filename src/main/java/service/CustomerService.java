@@ -5,8 +5,10 @@ import dao.CustomerDao;
 import dao.FollowUpDao;
 import dao.OpportunityDao;
 import entity.*;
+
 import java.sql.Connection;
 import java.util.List;
+
 import util.DbHelper;
 
 /**
@@ -18,19 +20,29 @@ import util.DbHelper;
  */
 public class CustomerService
 {
-    /** 客户主数据 DAO。 */
+    /**
+     * 客户主数据 DAO。
+     */
     private final CustomerDao dao = new CustomerDao();
 
-    /** 用于查询客户下的联系人。 */
+    /**
+     * 用于查询客户下的联系人。
+     */
     private final ContactDao contactDao = new ContactDao();
 
-    /** 用于查询客户下的商机。 */
+    /**
+     * 用于查询客户下的商机。
+     */
     private final OpportunityDao opportunityDao = new OpportunityDao();
 
-    /** 用于查询客户下的跟进记录。 */
+    /**
+     * 用于查询客户下的跟进记录。
+     */
     private final FollowUpDao followUpDao = new FollowUpDao();
 
-    /** 查询客户分页；页码至少为 1，每页数非法时回退为 10。 */
+    /**
+     * 查询客户分页；页码至少为 1，每页数非法时回退为 10。
+     */
     public PageBean<Customer> page(int page, int size, String keyword, User user)
     {
         // Math.max 保证 page 不会出现 0 或负数。
@@ -44,23 +56,31 @@ public class CustomerService
         int pages = (int) Math.ceil((double) total / size);
         // 删除最后一页数据后，把过大的页码拉回到最后一页。
         if (pages > 0 && page > pages)
+        {
             page = pages;
+        }
         return new PageBean<>(page, size, total, dao.page((page - 1) * size, size, keyword, user.getId(), sales));
     }
 
-    /** 查询当前用户有权查看的所有客户，常用于表单下拉框。 */
+    /**
+     * 查询当前用户有权查看的所有客户，常用于表单下拉框。
+     */
     public List<Customer> all(User user)
     {
         return dao.all(user.getId(), user.isSales());
     }
 
-    /** 按主键查询一个客户，DAO 同时校验当前用户的数据权限。 */
+    /**
+     * 按主键查询一个客户，DAO 同时校验当前用户的数据权限。
+     */
     public Customer get(int id, User user)
     {
         return dao.findById(id, user.getId(), user.isSales());
     }
 
-    /** 查询超过 30 天未跟进的客户预警列表。 */
+    /**
+     * 查询超过 30 天未跟进的客户预警列表。
+     */
     public List<Customer> warnings(User user)
     {
         return dao.warnings(user.getId(), user.isSales());
@@ -107,7 +127,9 @@ public class CustomerService
     {
         // 业务层先阻止空对象或空客户名称进入数据库。
         if (x == null || blank(x.getCustomerName()))
+        {
             return false;
+        }
         Connection conn = null;
         try
         {
@@ -126,6 +148,7 @@ public class CustomerService
         {
             // 事务第 5 步：任何一步失败都撤销本次事务已执行的 SQL。
             if (conn != null)
+            {
                 try
                 {
                     conn.rollback();
@@ -133,6 +156,7 @@ public class CustomerService
                 catch (Exception ignored)
                 {
                 }
+            }
             e.printStackTrace();
             return false;
         }
@@ -140,6 +164,7 @@ public class CustomerService
         {
             // 事务第 6 步：无论成功还是失败都归还连接，防止连接池耗尽。
             if (conn != null)
+            {
                 try
                 {
                     conn.close();
@@ -147,14 +172,19 @@ public class CustomerService
                 catch (Exception ignored)
                 {
                 }
+            }
         }
     }
 
-    /** 修改客户基本资料；主键、客户名称必须有效。 */
+    /**
+     * 修改客户基本资料；主键、客户名称必须有效。
+     */
     public boolean update(Customer x)
     {
         if (x == null || x.getId() == null || blank(x.getCustomerName()))
+        {
             return false;
+        }
         Connection conn = null;
         try
         {
@@ -172,6 +202,7 @@ public class CustomerService
         {
             // 5. 异常时回滚。
             if (conn != null)
+            {
                 try
                 {
                     conn.rollback();
@@ -179,6 +210,7 @@ public class CustomerService
                 catch (Exception ignored)
                 {
                 }
+            }
             e.printStackTrace();
             return false;
         }
@@ -186,6 +218,7 @@ public class CustomerService
         {
             // 6. 关闭/归还连接。
             if (conn != null)
+            {
                 try
                 {
                     conn.close();
@@ -193,10 +226,13 @@ public class CustomerService
                 catch (Exception ignored)
                 {
                 }
+            }
         }
     }
 
-    /** 逻辑删除客户：只把 status 改为 0，不会物理删除历史数据。 */
+    /**
+     * 逻辑删除客户：只把 status 改为 0，不会物理删除历史数据。
+     */
     public boolean delete(int id)
     {
         Connection conn = null;
@@ -215,6 +251,7 @@ public class CustomerService
         {
             // 5. 回滚。
             if (conn != null)
+            {
                 try
                 {
                     conn.rollback();
@@ -222,6 +259,7 @@ public class CustomerService
                 catch (Exception ignored)
                 {
                 }
+            }
             e.printStackTrace();
             return false;
         }
@@ -229,6 +267,7 @@ public class CustomerService
         {
             // 6. 关闭连接。
             if (conn != null)
+            {
                 try
                 {
                     conn.close();
@@ -236,6 +275,7 @@ public class CustomerService
                 catch (Exception ignored)
                 {
                 }
+            }
         }
     }
 
@@ -254,7 +294,9 @@ public class CustomerService
         // 将只读查询放在事务连接获取之前，避免在事务持有期间占用独立连接。
         Customer old = dao.findById(id, null, false);
         if (old == null)
+        {
             return false;
+        }
         Connection conn = null;
         try
         {
@@ -272,6 +314,7 @@ public class CustomerService
         {
             // 5. 任一写操作失败时回滚，避免出现“负责人改了但日志没写”。
             if (conn != null)
+            {
                 try
                 {
                     conn.rollback();
@@ -279,6 +322,7 @@ public class CustomerService
                 catch (Exception ignored)
                 {
                 }
+            }
             e.printStackTrace();
             return false;
         }
@@ -286,6 +330,7 @@ public class CustomerService
         {
             // 6. 关闭连接。
             if (conn != null)
+            {
                 try
                 {
                     conn.close();
@@ -293,10 +338,13 @@ public class CustomerService
                 catch (Exception ignored)
                 {
                 }
+            }
         }
     }
 
-    /** 判断字符串是否为 null、空字符串或只包含空白字符。 */
+    /**
+     * 判断字符串是否为 null、空字符串或只包含空白字符。
+     */
     private boolean blank(String s)
     {
         return s == null || s.trim().isEmpty();

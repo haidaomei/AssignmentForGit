@@ -13,16 +13,24 @@ import java.util.List;
  */
 public class Opportunity
 {
-    /** 主键和各关联表外键，以及成交概率、逻辑状态、阶段排序值。 */
+    /**
+     * 主键和各关联表外键，以及成交概率、逻辑状态、阶段排序值。
+     */
     private Integer id, customerId, contactId, stageId, ownerUserId, probability, status, stageSort;
 
-    /** 业务编号、标题、关联名称、日期、描述、结果原因和业务状态。 */
+    /**
+     * 业务编号、标题、关联名称、日期、描述、结果原因和业务状态。
+     */
     private String opportunityNo, title, customerName, contactName, stageName, ownerName, estimatedCloseDate, description, resultReason, businessStatus, createTime;
 
-    /** 产品明细汇总后的预计金额。 */
+    /**
+     * 产品明细汇总后的预计金额。
+     */
     private BigDecimal expectedAmount;
 
-    /** 主从关系中的“从表”数据；初始化为空集合可避免调用方遇到 null。 */
+    /**
+     * 主从关系中的“从表”数据；初始化为空集合可避免调用方遇到 null。
+     */
     private List<LineItem> items = new ArrayList<>();
 
     // 标准 JavaBean getter/setter。

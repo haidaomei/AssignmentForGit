@@ -4,17 +4,25 @@ import dao.ContactDao;
 import entity.Contact;
 import entity.PageBean;
 import entity.User;
+
 import java.sql.Connection;
 import java.util.List;
+
 import util.DbHelper;
 
-/** 联系人业务层：负责分页边界、必填校验、事务保存和逻辑删除。 */
+/**
+ * 联系人业务层：负责分页边界、必填校验、事务保存和逻辑删除。
+ */
 public class ContactService
 {
-    /** 所有数据库操作委托给 ContactDao。 */
+    /**
+     * 所有数据库操作委托给 ContactDao。
+     */
     private final ContactDao dao = new ContactDao();
 
-    /** 规范页码后查询一页联系人，并把总数与数据封装成 PageBean。 */
+    /**
+     * 规范页码后查询一页联系人，并把总数与数据封装成 PageBean。
+     */
     public PageBean<Contact> page(int p, int size, String keyword, User u)
     {
         // 页码最小为 1；每页条数非法时恢复为需求规定的 10。
@@ -24,28 +32,38 @@ public class ContactService
         int pages = (int) Math.ceil((double) total / size);
         // 请求页码超过末页时回到最后一页，避免出现“有数据但页面空白”。
         if (pages > 0 && p > pages)
+        {
             p = pages;
+        }
         return new PageBean<>(p, size, total, dao.page((p - 1) * size, size, keyword, u.getId(), u.isSales()));
     }
 
-    /** 查询某客户联系人，供联动下拉框和客户详情页使用。 */
+    /**
+     * 查询某客户联系人，供联动下拉框和客户详情页使用。
+     */
     public List<Contact> byCustomer(int id)
     {
         return dao.byCustomer(id);
     }
 
-    /** 按当前用户权限查询联系人详情。 */
+    /**
+     * 按当前用户权限查询联系人详情。
+     */
     public Contact get(int id, User u)
     {
         return dao.findById(id, u.getId(), u.isSales());
     }
 
-    /** 新增或编辑联系人。id 为空表示新增，有 id 表示编辑。 两种操作都属于写操作，因此共享同一套完整事务模板。 */
+    /**
+     * 新增或编辑联系人。id 为空表示新增，有 id 表示编辑。 两种操作都属于写操作，因此共享同一套完整事务模板。
+     */
     public boolean save(Contact x)
     {
         // 所属客户和姓名是数据库必填项，先在业务层给出失败结果。
         if (x == null || x.getCustomerId() == null || x.getName() == null || x.getName().isBlank())
+        {
             return false;
+        }
         Connection conn = null;
         try
         {
@@ -64,6 +82,7 @@ public class ContactService
         {
             // 事务步骤 5：异常回滚。
             if (conn != null)
+            {
                 try
                 {
                     conn.rollback();
@@ -71,6 +90,7 @@ public class ContactService
                 catch (Exception ignored)
                 {
                 }
+            }
             e.printStackTrace();
             return false;
         }
@@ -78,6 +98,7 @@ public class ContactService
         {
             // 事务步骤 6：归还连接。
             if (conn != null)
+            {
                 try
                 {
                     conn.close();
@@ -85,10 +106,13 @@ public class ContactService
                 catch (Exception ignored)
                 {
                 }
+            }
         }
     }
 
-    /** 把联系人 status 改为 0；不物理删除记录。 */
+    /**
+     * 把联系人 status 改为 0；不物理删除记录。
+     */
     public boolean delete(int id)
     {
         Connection conn = null;
@@ -107,6 +131,7 @@ public class ContactService
         {
             // 事务步骤 5：失败回滚。
             if (conn != null)
+            {
                 try
                 {
                     conn.rollback();
@@ -114,6 +139,7 @@ public class ContactService
                 catch (Exception ignored)
                 {
                 }
+            }
             e.printStackTrace();
             return false;
         }
@@ -121,6 +147,7 @@ public class ContactService
         {
             // 事务步骤 6：关闭/归还连接。
             if (conn != null)
+            {
                 try
                 {
                     conn.close();
@@ -128,6 +155,7 @@ public class ContactService
                 catch (Exception ignored)
                 {
                 }
+            }
         }
     }
 }

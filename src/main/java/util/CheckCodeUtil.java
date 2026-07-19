@@ -41,11 +41,15 @@ public final class CheckCodeUtil
     private static final String UPPERCASE = "ABCDEFGHJKMNPQRSTUVWXYZ";
     private static final String ALL_CODES = DIGITS + LOWERCASE + UPPERCASE;
 
-    /** 可选字体列表：混用不同字体增加字符形态差异，加大机器识别难度 */
+    /**
+     * 可选字体列表：混用不同字体增加字符形态差异，加大机器识别难度
+     */
     private static final String[] FONTS =
     {"Arial", "Serif", "SansSerif", "Dialog", "Monospaced"};
 
-    /** 不同字体对应的风格搭配，使每个字符粗细和斜体不一致 */
+    /**
+     * 不同字体对应的风格搭配，使每个字符粗细和斜体不一致
+     */
     private static final int[] FONT_STYLES =
     {Font.BOLD, Font.ITALIC, Font.BOLD | Font.ITALIC, Font.PLAIN, Font.BOLD};
 
@@ -99,7 +103,9 @@ public final class CheckCodeUtil
         return code;
     }
 
-    /** 生成包含数字、小写字母和大写字母各至少一个的随机串，末尾打乱顺序。 */
+    /**
+     * 生成包含数字、小写字母和大写字母各至少一个的随机串，末尾打乱顺序。
+     */
     private static String createCode(int size, Random r)
     {
         List<Character> chars = new ArrayList<>();
@@ -128,7 +134,9 @@ public final class CheckCodeUtil
         return source.charAt(r.nextInt(source.length()));
     }
 
-    /** 绘制大量半透明彩色噪点（约 140 个），直径 1~3px，提高背景复杂度。 */
+    /**
+     * 绘制大量半透明彩色噪点（约 140 个），直径 1~3px，提高背景复杂度。
+     */
     private static void drawNoiseDots(Graphics2D g, int w, int h, Random r)
     {
         for (int i = 0; i < 140; i++)
@@ -139,7 +147,9 @@ public final class CheckCodeUtil
         }
     }
 
-    /** 绘制 8 条贝塞尔曲线，来自不同方向，曲折穿插在字符之间。 */
+    /**
+     * 绘制 8 条贝塞尔曲线，来自不同方向，曲折穿插在字符之间。
+     */
     private static void drawInterferenceCurves(Graphics2D g, int w, int h, Random r)
     {
         for (int i = 0; i < 8; i++)
@@ -156,7 +166,9 @@ public final class CheckCodeUtil
         }
     }
 
-    /** 绘制 5 条贯穿字符区域的干扰直线，部分带虚线风格，模拟人工划线。 */
+    /**
+     * 绘制 5 条贯穿字符区域的干扰直线，部分带虚线风格，模拟人工划线。
+     */
     private static void drawStrikethroughLines(Graphics2D g, int w, int h, Random r)
     {
         for (int i = 0; i < 5; i++)
@@ -241,7 +253,9 @@ public final class CheckCodeUtil
         }
     }
 
-    /** 字符上层叠加稀疏噪点（约 30 个），模拟扫描/拍照噪声。 */
+    /**
+     * 字符上层叠加稀疏噪点（约 30 个），模拟扫描/拍照噪声。
+     */
     private static void drawOverlayNoise(Graphics2D g, int w, int h, Random r)
     {
         for (int i = 0; i < 30; i++)

@@ -10,13 +10,19 @@ package entity;
  */
 public class Customer
 {
-    /** 主键、三个外键、逻辑状态以及计算出来的未跟进天数。Integer 可以表达数据库中的 null。 */
+    /**
+     * 主键、三个外键、逻辑状态以及计算出来的未跟进天数。Integer 可以表达数据库中的 null。
+     */
     private Integer id, levelId, sourceId, ownerUserId, status, warningDays;
 
-    /** 客户表直接保存的文字字段。customerNo 是对用户有意义的业务编号。 */
+    /**
+     * 客户表直接保存的文字字段。customerNo 是对用户有意义的业务编号。
+     */
     private String customerNo, customerName, industry, scale, province, city, address, website, creditRating, description;
 
-    /** JOIN 关联查询和日期格式化后得到的展示字段，它们不需要在表单中直接提交。 */
+    /**
+     * JOIN 关联查询和日期格式化后得到的展示字段，它们不需要在表单中直接提交。
+     */
     private String levelName, sourceName, ownerName, lastFollowTime, createTime;
 
     // 标准 JavaBean getter/setter：DAO 用 setter 装入数据，JSP 用 getter 读取数据。

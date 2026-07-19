@@ -2,12 +2,14 @@ package servlet;
 
 import com.google.gson.Gson;
 import entity.*;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
+
 import service.*;
 
 /**
@@ -91,8 +93,12 @@ public class OpportunityServlet extends BaseServlet
             int stageId = intVal(req.getParameter("stageId"), 0);
             Lookup target = null;
             for (Lookup s : common.stages())
+            {
                 if (s.getId() == stageId)
+                {
                     target = s;
+                }
+            }
             ok = target != null && service.advance(intVal(req.getParameter("id"), 0), stageId, target.getProbability(), target.getName(), req.getParameter("reason"), user(req));
             flash(req, ok, "商机阶段已推进");
             redirect(req, resp, "/opportunity/detail?id=" + intVal(req.getParameter("id"), 0));
@@ -143,12 +149,18 @@ public class OpportunityServlet extends BaseServlet
         x.setEstimatedCloseDate(r.getParameter("estimatedCloseDate"));
         x.setOwnerUserId(integer(r.getParameter("ownerUserId")));
         if (x.getOwnerUserId() == null)
+        {
             x.setOwnerUserId(user(r).getId());
+        }
         x.setDescription(r.getParameter("description"));
         x.setResultReason(r.getParameter("resultReason"));
         for (Lookup s : common.stages())
+        {
             if (s.getId().equals(x.getStageId()))
+            {
                 x.setProbability(s.getProbability());
+            }
+        }
         x.setItems(readItems(r));
         return x;
     }
@@ -160,12 +172,16 @@ public class OpportunityServlet extends BaseServlet
         String[] prices = r.getParameterValues("items[][unitPrice]");
         List<LineItem> list = new ArrayList<>();
         if (products == null)
+        {
             return list;
+        }
         for (int i = 0; i < products.length; i++)
         {
             Integer pid = integer(products[i]);
             if (pid == null)
+            {
                 continue;
+            }
             LineItem x = new LineItem();
             x.setProductId(pid);
             x.setQuantity(intVal(quantities != null && i < quantities.length ? quantities[i] : null, 1));
@@ -178,16 +194,26 @@ public class OpportunityServlet extends BaseServlet
     private boolean allowed(HttpServletRequest req, Integer cid)
     {
         if (cid == null)
+        {
             return false;
+        }
         if (!user(req).isSales())
+        {
             return true;
+        }
         for (Customer c : customerService.all(user(req)))
+        {
             if (c.getId().equals(cid))
+            {
                 return true;
+            }
+        }
         return false;
     }
 }
-/** GET 处理联动 JSON、分页列表、详情与表单页。 */
+/**
+ * GET 处理联动 JSON、分页列表、详情与表单页。
+ */
 // /options 按客户返回商机 JSON，供合同或跟进表单联动使用。
 // 查询前校验客户归属，无权时返回 HTTP 403。
 // 列表支持页码、阶段和业务状态筛选。

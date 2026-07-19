@@ -11,28 +11,44 @@ package entity;
  */
 public class User
 {
-    /** 数据库自增主键，只用于程序内部关联，不直接展示给用户。 */
+    /**
+     * 数据库自增主键，只用于程序内部关联，不直接展示给用户。
+     */
     private Integer id;
 
-    /** 登录用户名，对应数据库 username 列。 */
+    /**
+     * 登录用户名，对应数据库 username 列。
+     */
     private String username;
 
-    /** 登录密码；本教学项目按需求明文保存，生产项目必须改为不可逆哈希。 */
+    /**
+     * 登录密码；本教学项目按需求明文保存，生产项目必须改为不可逆哈希。
+     */
     private String password;
 
-    /** 用户真实姓名，用于页面显示负责人和跟进人。 */
+    /**
+     * 用户真实姓名，用于页面显示负责人和跟进人。
+     */
     private String realName;
 
-    /** 联系电话。 */
+    /**
+     * 联系电话。
+     */
     private String phone;
 
-    /** 电子邮箱。 */
+    /**
+     * 电子邮箱。
+     */
     private String email;
 
-    /** 角色编码：admin、sales_manager 或 sales。 */
+    /**
+     * 角色编码：admin、sales_manager 或 sales。
+     */
     private String role;
 
-    /** 逻辑状态：1 表示启用，0 表示禁用。 */
+    /**
+     * 逻辑状态：1 表示启用，0 表示禁用。
+     */
     private Integer status;
 
     // 以下 getter 用于“读取字段”，setter 用于“给字段赋值”。JSP/DAO 都依赖这些方法。

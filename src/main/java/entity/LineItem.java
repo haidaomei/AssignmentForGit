@@ -12,13 +12,19 @@ import java.math.BigDecimal;
  */
 public class LineItem
 {
-    /** 明细主键、所属主表、产品外键、购买数量和逻辑状态。 */
+    /**
+     * 明细主键、所属主表、产品外键、购买数量和逻辑状态。
+     */
     private Integer id, parentId, productId, quantity, status;
 
-    /** 保存产品名称快照，产品以后改名时历史单据仍能显示原名称。 */
+    /**
+     * 保存产品名称快照，产品以后改名时历史单据仍能显示原名称。
+     */
     private String productName;
 
-    /** 成交单价与行小计，均使用 BigDecimal 保证金额精度。 */
+    /**
+     * 成交单价与行小计，均使用 BigDecimal 保证金额精度。
+     */
     private BigDecimal unitPrice, subtotal;
 
     // 标准 JavaBean getter/setter。

@@ -1,8 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8"%><%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%><!DOCTYPE html>
 <html lang="zh-CN">
-<head><jsp:include page="header.jsp" /></head>
-<body class="hold-transition sidebar-mini">
-	<div class="wrapper"><jsp:include page="navbar.jsp" /><jsp:include page="sidebar.jsp" /><div class="content-wrapper">
+	<head><jsp:include page="header.jsp" /></head>
+	<body class="hold-transition sidebar-mini">
+		<div class="wrapper"><jsp:include page="navbar.jsp" /><jsp:include page="sidebar.jsp" /><div class="content-wrapper">
 			<div class="content-header">
 				<div class="container-fluid">
 					<h1>新增跟进记录</h1>
@@ -41,9 +41,9 @@
 									<div class="form-group col-md-4">
 										<label>跟进方式 *</label>
 										<select name="followType" class="form-control" required>
-											<c:forEach items="${['电话','拜访','邮件','线上会议','其它']}" var="v">
+											<c:forTokens items="电话,拜访,邮件,线上会议,其它" delims="," var="v">
 												<option>${v}</option>
-											</c:forEach>
+											</c:forTokens>
 										</select>
 									</div>
 									<div class="form-group col-md-4">
@@ -79,6 +79,6 @@
 					</form>
 				</div>
 			</section>
-		</div><jsp:include page="footer.jsp" /></div><jsp:include page="scripts.jsp" /><script>const ctx='${pageContext.request.contextPath}';async function loadOptions(){const id=document.getElementById('customerId').value,c=document.getElementById('contactId'),o=document.getElementById('opportunityId'),selected=o.dataset.selected;c.innerHTML='<option value="">请选择</option>';o.innerHTML='<option value="">无</option>';if(!id)return;const [cs,os]=await Promise.all([fetch(ctx+'/contact/options?customerId='+id).then(r=>r.json()),fetch(ctx+'/opportunity/options?customerId='+id).then(r=>r.json())]);cs.forEach(x=>c.add(new Option(x.name,x.id)));os.forEach(x=>{const op=new Option(x.title,x.id);if(String(x.id)===selected)op.selected=true;o.add(op)})}document.getElementById('customerId').onchange=()=>{document.getElementById('opportunityId').dataset.selected='';loadOptions()};loadOptions();</script>
-</body>
-</html>
+			</div><jsp:include page="footer.jsp" /></div><jsp:include page="scripts.jsp" /><script>const ctx='${pageContext.request.contextPath}';async function loadOptions(){const id=document.getElementById('customerId').value,c=document.getElementById('contactId'),o=document.getElementById('opportunityId'),selected=o.dataset.selected;c.innerHTML='<option value="">请选择</option>';o.innerHTML='<option value="">无</option>';if(!id)return;const [cs,os]=await Promise.all([fetch(ctx+'/contact/options?customerId='+id).then(r=>r.json()),fetch(ctx+'/opportunity/options?customerId='+id).then(r=>r.json())]);cs.forEach(x=>c.add(new Option(x.name,x.id)));os.forEach(x=>{const op=new Option(x.title,x.id);if(String(x.id)===selected)op.selected=true;o.add(op)})}document.getElementById('customerId').onchange=()=>{document.getElementById('opportunityId').dataset.selected='';loadOptions()};loadOptions();</script>
+		</body>
+	</html>

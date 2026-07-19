@@ -8,10 +8,14 @@ package entity;
  */
 public class TransferLog
 {
-    /** 日志主键、客户主键、原负责人和新负责人主键。 */
+    /**
+     * 日志主键、客户主键、原负责人和新负责人主键。
+     */
     private Integer id, customerId, fromUserId, toUserId;
 
-    /** JOIN 得到的负责人姓名、格式化时间和转移原因。 */
+    /**
+     * JOIN 得到的负责人姓名、格式化时间和转移原因。
+     */
     private String fromUserName, toUserName, transferTime, reason;
 
     // 标准 JavaBean getter/setter。

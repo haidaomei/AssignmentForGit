@@ -2,10 +2,12 @@ package dao;
 
 import entity.DashboardStats;
 import entity.FunnelData;
+
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import util.DbHelper;
@@ -19,36 +21,48 @@ import util.DbHelper;
  */
 public class DashboardDao
 {
-    /** 所有统计查询共用的 JdbcTemplate。 */
+    /**
+     * 所有统计查询共用的 JdbcTemplate。
+     */
     private final JdbcTemplate tpl = DbHelper.getJdbcTemplate();
 
-    /** 客户表别名为 c 时使用的数据范围条件。 */
+    /**
+     * 客户表别名为 c 时使用的数据范围条件。
+     */
     private String cScope(boolean sales)
     {
         return sales ? " AND c.owner_user_id=?" : "";
     }
 
-    /** 商机表别名为 o 时使用的数据范围条件。 */
+    /**
+     * 商机表别名为 o 时使用的数据范围条件。
+     */
     private String oScope(boolean sales)
     {
         return sales ? " AND o.owner_user_id=?" : "";
     }
 
-    /** 执行返回整数的统计 SQL，并统一把数据库 null 转为 0。 */
+    /**
+     * 执行返回整数的统计 SQL，并统一把数据库 null 转为 0。
+     */
     private int integer(String sql, Integer uid, boolean sales)
     {
         Integer n = sales ? tpl.queryForObject(sql, Integer.class, uid) : tpl.queryForObject(sql, Integer.class);
         return n == null ? 0 : n;
     }
 
-    /** 执行返回金额的统计 SQL，并统一把数据库 null 转为 BigDecimal.ZERO。 */
+    /**
+     * 执行返回金额的统计 SQL，并统一把数据库 null 转为 BigDecimal.ZERO。
+     */
     private BigDecimal decimal(String sql, Integer uid, boolean sales)
     {
         BigDecimal n = sales ? tpl.queryForObject(sql, BigDecimal.class, uid) : tpl.queryForObject(sql, BigDecimal.class);
         return n == null ? BigDecimal.ZERO : n;
     }
 
-    /** 依次计算六个仪表盘指标。 每个 SQL 都带 status=1，并在 sales=true 时额外绑定当前用户 id。 */
+    /**
+     * 依次计算六个仪表盘指标。 每个 SQL 都带 status=1，并在 sales=true 时额外绑定当前用户 id。
+     */
     public DashboardStats stats(Integer uid, boolean sales)
     {
         // 先创建空统计对象，再逐项写入查询结果。
@@ -63,7 +77,9 @@ public class DashboardDao
         return x;
     }
 
-    /** 按商机阶段分组统计数量与金额。 LEFT JOIN 保证某阶段即使暂时没有商机也会返回 0；EXISTS 排除已删除客户的商机。 */
+    /**
+     * 按商机阶段分组统计数量与金额。 LEFT JOIN 保证某阶段即使暂时没有商机也会返回 0；EXISTS 排除已删除客户的商机。
+     */
     public List<FunnelData> funnel(Integer uid, boolean sales)
     {
         String sql = "SELECT st.stage_name name,COUNT(o.id) value,COALESCE(SUM(o.expected_amount),0) amount FROM" + " crm_opportunity_stage st LEFT JOIN crm_business_opportunity o ON st.id=o.stage_id" + " AND o.status=1 AND EXISTS(SELECT 1 FROM crm_customer c WHERE c.id=o.customer_id AND" + " c.status=1)" + (sales ? " AND o.owner_user_id=?" : "") + " WHERE st.stage_code<>'LOST' GROUP BY st.id,st.stage_name,st.sort_order ORDER BY" + " st.sort_order";

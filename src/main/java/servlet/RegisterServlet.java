@@ -1,17 +1,23 @@
 package servlet;
 
 import entity.User;
+
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
+
 import service.LoginService;
 
-/** 销售员自助注册 Servlet，新账号的角色由业务层固定为销售员。 */
+/**
+ * 销售员自助注册 Servlet，新账号的角色由业务层固定为销售员。
+ */
 @WebServlet("/register")
 public class RegisterServlet extends BaseServlet
 {
-    /** 登录/注册业务层。 */
+    /**
+     * 登录/注册业务层。
+     */
     private final LoginService service = new LoginService();
 
     @Override
@@ -56,7 +62,9 @@ public class RegisterServlet extends BaseServlet
         }
     }
 }
-/** GET 请求打开注册页。 */
+/**
+ * GET 请求打开注册页。
+ */
 /** POST 请求校验表单并创建用户。 */
 // 先校验验证码，防止自动化批量注册。
 // 两次密码必须完全相同，否则不继续调用数据库。

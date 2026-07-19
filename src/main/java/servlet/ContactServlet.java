@@ -4,11 +4,13 @@ import com.google.gson.Gson;
 import entity.Contact;
 import entity.Customer;
 import entity.PageBean;
+
 import java.io.IOException;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
+
 import service.ContactService;
 import service.CustomerService;
 
@@ -21,7 +23,9 @@ import service.CustomerService;
 @WebServlet("/contact/*")
 public class ContactServlet extends BaseServlet
 {
-    /** 联系人业务。 */
+    /**
+     * 联系人业务。
+     */
     private final ContactService service = new ContactService();
 
     private final CustomerService customerService = new CustomerService();
@@ -76,7 +80,9 @@ public class ContactServlet extends BaseServlet
         String p = req.getPathInfo();
         boolean ok;
         if ("/delete".equals(p))
+        {
             ok = service.delete(intVal(req.getParameter("id"), 0));
+        }
         else
         {
             Contact x = read(req);
@@ -107,17 +113,27 @@ public class ContactServlet extends BaseServlet
     private boolean allowed(HttpServletRequest req, Integer customerId)
     {
         if (customerId == null)
+        {
             return false;
+        }
         if (!user(req).isSales())
+        {
             return true;
+        }
         List<Customer> list = customerService.all(user(req));
         for (Customer c : list)
+        {
             if (c.getId().equals(customerId))
+            {
                 return true;
+            }
+        }
         return false;
     }
 }
-/** 客户业务，用于下拉列表和归属校验。 */
+/**
+ * 客户业务，用于下拉列表和归属校验。
+ */
 /** GET 处理 JSON 联动、分页列表和新增/编辑表单。 */
 // /options 是纯 JSON 数据接口。
 // 返回数据前必须确认销售员拥有该客户，防止通过参数查看别人的联系人。

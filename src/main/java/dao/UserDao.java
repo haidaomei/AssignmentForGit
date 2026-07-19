@@ -1,11 +1,13 @@
 package dao;
 
 import entity.User;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -21,7 +23,9 @@ import util.DbHelper;
  */
 public class UserDao
 {
-    /** 查询工具，内部使用 DbHelper 创建的同一个 Druid 连接池。 */
+    /**
+     * 查询工具，内部使用 DbHelper 创建的同一个 Druid 连接池。
+     */
     private final JdbcTemplate tpl = DbHelper.getJdbcTemplate();
 
     /**
@@ -60,14 +64,18 @@ public class UserDao
         }
     }
 
-    /** 注册前检查用户名是否已经存在。COUNT(*) 只返回一个数字，因此使用 queryForObject。 */
+    /**
+     * 注册前检查用户名是否已经存在。COUNT(*) 只返回一个数字，因此使用 queryForObject。
+     */
     public boolean exists(String username)
     {
         Integer n = tpl.queryForObject("SELECT COUNT(*) FROM sys_user WHERE username=?", Integer.class, username);
         return n != null && n > 0;
     }
 
-    /** 查询所有启用用户，供负责人下拉框使用。 */
+    /**
+     * 查询所有启用用户，供负责人下拉框使用。
+     */
     public List<User> findAllActive()
     {
         return tpl.query("SELECT * FROM sys_user WHERE status=1 ORDER BY role,real_name", mapper);

@@ -11,25 +11,39 @@ import java.util.List;
  */
 public class PageBean<T>
 {
-    /** 当前页，从 1 开始。 */
+    /**
+     * 当前页，从 1 开始。
+     */
     private int currentPage;
 
-    /** 每页最多显示多少条。 */
+    /**
+     * 每页最多显示多少条。
+     */
     private int pageSize;
 
-    /** 数据库中符合条件的总记录数。 */
+    /**
+     * 数据库中符合条件的总记录数。
+     */
     private int totalCount;
 
-    /** 总页数，由 totalCount 和 pageSize 计算。 */
+    /**
+     * 总页数，由 totalCount 和 pageSize 计算。
+     */
     private int totalPages;
 
-    /** 当前页的实际数据。 */
+    /**
+     * 当前页的实际数据。
+     */
     private List<T> data;
 
-    /** 保留搜索关键字，翻页时可继续使用。 */
+    /**
+     * 保留搜索关键字，翻页时可继续使用。
+     */
     private String keywords;
 
-    /** 无参构造器供框架或手动逐项赋值使用。 */
+    /**
+     * 无参构造器供框架或手动逐项赋值使用。
+     */
     public PageBean()
     {
     }

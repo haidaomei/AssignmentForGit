@@ -4,11 +4,13 @@ import dao.CustomerDao;
 import dao.FollowUpDao;
 import dao.OpportunityDao;
 import entity.*;
+
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+
 import util.DbHelper;
 
 /**
@@ -20,16 +22,24 @@ import util.DbHelper;
  */
 public class OpportunityService
 {
-    /** 商机主表和产品明细 DAO。 */
+    /**
+     * 商机主表和产品明细 DAO。
+     */
     private final OpportunityDao dao = new OpportunityDao();
 
-    /** 阶段推进时用于保存系统跟进记录。 */
+    /**
+     * 阶段推进时用于保存系统跟进记录。
+     */
     private final FollowUpDao followDao = new FollowUpDao();
 
-    /** 阶段推进时用于同步客户最后跟进时间。 */
+    /**
+     * 阶段推进时用于同步客户最后跟进时间。
+     */
     private final CustomerDao customerDao = new CustomerDao();
 
-    /** 按商机编号、标题或客户名称模糊分页查询，同时应用销售员数据范围。 */
+    /**
+     * 按商机编号、标题或客户名称模糊分页查询，同时应用销售员数据范围。
+     */
     public PageBean<Opportunity> page(int p, int size, String keyword, User u)
     {
         // 保证页码至少为 1，每页大小默认为 10。
@@ -38,11 +48,15 @@ public class OpportunityService
         int total = dao.count(keyword, u.getId(), u.isSales());
         int pages = (int) Math.ceil((double) total / size);
         if (pages > 0 && p > pages)
+        {
             p = pages;
+        }
         return new PageBean<>(p, size, total, dao.page((p - 1) * size, size, keyword, u.getId(), u.isSales()));
     }
 
-    /** 按主键查询商机及其产品明细；DAO 会同时检查数据权限。 */
+    /**
+     * 按主键查询商机及其产品明细；DAO 会同时检查数据权限。
+     */
     public Opportunity get(int id, User u)
     {
         return dao.findById(id, u.getId(), u.isSales());
@@ -66,7 +80,9 @@ public class OpportunityService
     {
         // 商机标题和至少一条不重复的产品明细是必填数据。
         if (x == null || x.getTitle() == null || x.getTitle().isBlank() || !validItems(x.getItems()))
+        {
             return false;
+        }
         // 进入事务前先用 BigDecimal 重新计算总金额，不信任浏览器传回的金额。
         x.setExpectedAmount(total(x.getItems()));
         Connection conn = null;
@@ -88,12 +104,16 @@ public class OpportunityService
                 // 3b. 有主键表示修改：更新主表，再使原产品明细失效。
                 id = x.getId();
                 if (dao.update(conn, x) <= 0)
+                {
                     throw new IllegalStateException("商机不存在");
+                }
                 dao.deactivateItems(conn, id);
             }
             // 3c. 逐条保存新的产品明细，每条都使用同一个 conn。
             for (LineItem item : x.getItems())
+            {
                 dao.saveItem(conn, id, item);
+            }
             // 4. 主表和全部明细都成功后提交。
             conn.commit();
             return true;
@@ -102,6 +122,7 @@ public class OpportunityService
         {
             // 5. 任一条 SQL 失败都回滚，避免留下没有明细的“半成品”商机。
             if (conn != null)
+            {
                 try
                 {
                     conn.rollback();
@@ -109,6 +130,7 @@ public class OpportunityService
                 catch (Exception ignored)
                 {
                 }
+            }
             e.printStackTrace();
             return false;
         }
@@ -116,6 +138,7 @@ public class OpportunityService
         {
             // 6. 最后归还连接。
             if (conn != null)
+            {
                 try
                 {
                     conn.close();
@@ -123,6 +146,7 @@ public class OpportunityService
                 catch (Exception ignored)
                 {
                 }
+            }
         }
     }
 
@@ -140,7 +164,9 @@ public class OpportunityService
         // 先按权限查询原商机，同时校验概率不倒退、丢单时已填原因。
         Opportunity old = dao.findById(id, user.getId(), user.isSales());
         if (old == null || (!"丢单".equals(stageName) && probability <= old.getProbability()) || ("丢单".equals(stageName) && (reason == null || reason.isBlank())))
+        {
             return false;
+        }
         // 阶段名称决定业务状态：已成交、已丢单或仍在进行中。
         String state = "成交".equals(stageName) ? "已成交" : "丢单".equals(stageName) ? "已丢单" : "进行中";
         Connection conn = null;
@@ -172,6 +198,7 @@ public class OpportunityService
         {
             // 5. 任意一项失败则全部回滚。
             if (conn != null)
+            {
                 try
                 {
                     conn.rollback();
@@ -179,6 +206,7 @@ public class OpportunityService
                 catch (Exception ignored)
                 {
                 }
+            }
             e.printStackTrace();
             return false;
         }
@@ -186,6 +214,7 @@ public class OpportunityService
         {
             // 6. 归还数据库连接。
             if (conn != null)
+            {
                 try
                 {
                     conn.close();
@@ -193,10 +222,13 @@ public class OpportunityService
                 catch (Exception ignored)
                 {
                 }
+            }
         }
     }
 
-    /** 逻辑删除商机；查询时会通过 status=1 隐藏它及其明细。 */
+    /**
+     * 逻辑删除商机；查询时会通过 status=1 隐藏它及其明细。
+     */
     public boolean delete(int id)
     {
         Connection conn = null;
@@ -213,6 +245,7 @@ public class OpportunityService
         {
             // 5. 异常回滚。
             if (conn != null)
+            {
                 try
                 {
                     conn.rollback();
@@ -220,6 +253,7 @@ public class OpportunityService
                 catch (Exception ignored)
                 {
                 }
+            }
             e.printStackTrace();
             return false;
         }
@@ -227,6 +261,7 @@ public class OpportunityService
         {
             // 6. 关闭连接。
             if (conn != null)
+            {
                 try
                 {
                     conn.close();
@@ -234,6 +269,7 @@ public class OpportunityService
                 catch (Exception ignored)
                 {
                 }
+            }
         }
     }
 
@@ -251,24 +287,36 @@ public class OpportunityService
         {
             // 数量非法时默认为 1；单价为 null 时按 0 处理，防止空指针异常。
             if (i.getQuantity() == null || i.getQuantity() <= 0)
+            {
                 i.setQuantity(1);
+            }
             if (i.getUnitPrice() == null)
+            {
                 i.setUnitPrice(BigDecimal.ZERO);
+            }
             i.setSubtotal(i.getUnitPrice().multiply(BigDecimal.valueOf(i.getQuantity())));
             t = t.add(i.getSubtotal());
         }
         return t;
     }
 
-    /** 校验明细非空、每行都选了产品，且同一产品没有重复出现。 */
+    /**
+     * 校验明细非空、每行都选了产品，且同一产品没有重复出现。
+     */
     private boolean validItems(List<LineItem> items)
     {
         if (items == null || items.isEmpty())
+        {
             return false;
+        }
         java.util.Set<Integer> ids = new java.util.HashSet<>();
         for (LineItem i : items)
+        {
             if (i.getProductId() == null || !ids.add(i.getProductId()))
+            {
                 return false;
+            }
+        }
         return true;
     }
 }

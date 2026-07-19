@@ -2,8 +2,10 @@ package dao;
 
 import entity.LineItem;
 import entity.Opportunity;
+
 import java.sql.*;
 import java.util.List;
+
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -18,16 +20,24 @@ import util.DbHelper;
  */
 public class OpportunityDao
 {
-    /** 查询使用的 JdbcTemplate。 */
+    /**
+     * 查询使用的 JdbcTemplate。
+     */
     private final JdbcTemplate tpl = DbHelper.getJdbcTemplate();
 
-    /** 商机查询公共列，包含客户、联系人、阶段、负责人和格式化日期。 */
+    /**
+     * 商机查询公共列，包含客户、联系人、阶段、负责人和格式化日期。
+     */
     private static final String SELECT = "SELECT o.*,c.customer_name,ct.name contact_name,st.stage_name,st.sort_order" + " stage_sort,u.real_name owner_name,DATE_FORMAT(o.estimated_close_date,'%Y-%m-%d')" + " close_date,DATE_FORMAT(o.create_time,'%Y-%m-%d') created ";
 
-    /** 商机列表所需的关联表。客户和阶段必有，因此 INNER JOIN；联系人和负责人可空，因此 LEFT JOIN。 */
+    /**
+     * 商机列表所需的关联表。客户和阶段必有，因此 INNER JOIN；联系人和负责人可空，因此 LEFT JOIN。
+     */
     private static final String FROM = " FROM crm_business_opportunity o JOIN crm_customer c ON o.customer_id=c.id LEFT JOIN" + " crm_contact ct ON o.contact_id=ct.id JOIN crm_opportunity_stage st ON" + " o.stage_id=st.id LEFT JOIN sys_user u ON o.owner_user_id=u.id ";
 
-    /** 把商机主表关联查询结果映射成 Opportunity。 */
+    /**
+     * 把商机主表关联查询结果映射成 Opportunity。
+     */
     private final RowMapper<Opportunity> mapper = new RowMapper<Opportunity>()
     {
         @Override
@@ -58,7 +68,9 @@ public class OpportunityDao
         }
     };
 
-    /** 把一条商机产品明细映射成通用 LineItem。 */
+    /**
+     * 把一条商机产品明细映射成通用 LineItem。
+     */
     private final RowMapper<LineItem> itemMapper = new RowMapper<LineItem>()
     {
         @Override
@@ -94,7 +106,9 @@ public class OpportunityDao
         return keyword == null || keyword.isBlank() ? "" : " AND (o.opportunity_no LIKE ? OR o.title LIKE ? OR c.customer_name LIKE ?) ";
     }
 
-    /** 按“三个 LIKE→权限用户→分页”的 SQL 顺序组装参数。 */
+    /**
+     * 按“三个 LIKE→权限用户→分页”的 SQL 顺序组装参数。
+     */
     private Object[] args(String keyword, Integer uid, boolean sales, Object... tail)
     {
         java.util.ArrayList<Object> a = new java.util.ArrayList<>();
@@ -107,13 +121,17 @@ public class OpportunityDao
             a.add(like);
         }
         if (sales)
+        {
             a.add(uid);
+        }
         // tail 常用于追加分页的 offset 和 size。
         java.util.Collections.addAll(a, tail);
         return a.toArray();
     }
 
-    /** 统计模糊搜索后的商机总数。客户 status=1 实现父客户删除后的级联隐藏。 */
+    /**
+     * 统计模糊搜索后的商机总数。客户 status=1 实现父客户删除后的级联隐藏。
+     */
     public int count(String keyword, Integer uid, boolean sales)
     {
         String sql = "SELECT COUNT(*)" + FROM + " WHERE o.status=1 AND c.status=1" + keywordFilter(keyword) + scope(sales);
@@ -121,20 +139,26 @@ public class OpportunityDao
         return n == null ? 0 : n;
     }
 
-    /** 按关键词查询商机分页列表。 */
+    /**
+     * 按关键词查询商机分页列表。
+     */
     public List<Opportunity> page(int offset, int size, String keyword, Integer uid, boolean sales)
     {
         String sql = SELECT + FROM + " WHERE o.status=1 AND c.status=1" + keywordFilter(keyword) + scope(sales) + " ORDER BY o.create_time DESC LIMIT ?,?";
         return tpl.query(sql, mapper, args(keyword, uid, sales, offset, size));
     }
 
-    /** 查询某个客户的商机，供客户详情页展示。 */
+    /**
+     * 查询某个客户的商机，供客户详情页展示。
+     */
     public List<Opportunity> byCustomer(int customerId)
     {
         return tpl.query(SELECT + FROM + " WHERE o.status=1 AND c.status=1 AND o.customer_id=? ORDER BY o.create_time DESC", mapper, customerId);
     }
 
-    /** 查询商机详情，并额外查询它的有效产品明细放入 items。 */
+    /**
+     * 查询商机详情，并额外查询它的有效产品明细放入 items。
+     */
     public Opportunity findById(int id, Integer uid, boolean sales)
     {
         try
@@ -143,7 +167,9 @@ public class OpportunityDao
             Opportunity x = sales ? tpl.queryForObject(sql, mapper, id, uid) : tpl.queryForObject(sql, mapper, id);
             // 主表和从表分两次查询，代码更清晰，也避免 JOIN 后主表数据被每条明细重复。
             if (x != null)
+            {
                 x.setItems(items(id));
+            }
             return x;
         }
         catch (EmptyResultDataAccessException e)
@@ -152,13 +178,17 @@ public class OpportunityDao
         }
     }
 
-    /** 查询商机有效产品明细。 */
+    /**
+     * 查询商机有效产品明细。
+     */
     public List<LineItem> items(int id)
     {
         return tpl.query("SELECT * FROM crm_opportunity_product WHERE opportunity_id=? AND status=1 ORDER BY id", itemMapper, id);
     }
 
-    /** 按 CRM + 日期 + 四位流水生成下一个商机业务编号。 */
+    /**
+     * 按 CRM + 日期 + 四位流水生成下一个商机业务编号。
+     */
     public String nextNumber(Connection conn) throws SQLException
     {
         String day = new java.text.SimpleDateFormat("yyyyMMdd").format(new java.util.Date());
@@ -174,7 +204,9 @@ public class OpportunityDao
         }
     }
 
-    /** 插入商机主表并返回数据库生成的内部主键。 */
+    /**
+     * 插入商机主表并返回数据库生成的内部主键。
+     */
     public int save(Connection conn, Opportunity x) throws SQLException
     {
         String sql = "INSERT INTO" + " crm_business_opportunity(opportunity_no,title,customer_id,contact_id,stage_id,expected_amount,estimated_close_date,owner_user_id,probability,description,result_reason,business_status,status)" + " VALUES(?,?,?,?,?,?,?,?,?,?,?,'进行中',1)";
@@ -186,13 +218,17 @@ public class OpportunityDao
             try (ResultSet r = p.getGeneratedKeys())
             {
                 if (!r.next())
+                {
                     throw new SQLException("无法取得商机主键");
+                }
                 return r.getInt(1);
             }
         }
     }
 
-    /** 更新商机基本信息，不直接修改业务状态；业务状态由阶段推进方法维护。 */
+    /**
+     * 更新商机基本信息，不直接修改业务状态；业务状态由阶段推进方法维护。
+     */
     public int update(Connection conn, Opportunity x) throws SQLException
     {
         String sql = "UPDATE crm_business_opportunity SET" + " title=?,customer_id=?,contact_id=?,stage_id=?,expected_amount=?,estimated_close_date=?,owner_user_id=?,probability=?,description=?,result_reason=?,update_time=NOW()" + " WHERE id=? AND status=1";
@@ -204,12 +240,16 @@ public class OpportunityDao
         }
     }
 
-    /** 绑定商机新增/编辑共有参数，withNo 控制是否包含新增时才有的业务编号。 */
+    /**
+     * 绑定商机新增/编辑共有参数，withNo 控制是否包含新增时才有的业务编号。
+     */
     private void bind(PreparedStatement p, Opportunity x, boolean withNo) throws SQLException
     {
         int i = 1;
         if (withNo)
+        {
             p.setString(i++, x.getOpportunityNo());
+        }
         p.setString(i++, x.getTitle());
         p.setInt(i++, x.getCustomerId());
         setInt(p, i++, x.getContactId());
@@ -222,22 +262,32 @@ public class OpportunityDao
         p.setString(i, x.getResultReason());
     }
 
-    /** 把空白字符串转为 null，数据库日期列不能接收空字符串。 */
+    /**
+     * 把空白字符串转为 null，数据库日期列不能接收空字符串。
+     */
     private String blankNull(String s)
     {
         return s == null || s.isBlank() ? null : s;
     }
 
-    /** 安全绑定可空的 Integer 外键。 */
+    /**
+     * 安全绑定可空的 Integer 外键。
+     */
     private void setInt(PreparedStatement p, int i, Integer v) throws SQLException
     {
         if (v == null)
+        {
             p.setNull(i, Types.INTEGER);
+        }
         else
+        {
             p.setInt(i, v);
+        }
     }
 
-    /** 编辑主从表时先把全部旧明细逻辑删除。 */
+    /**
+     * 编辑主从表时先把全部旧明细逻辑删除。
+     */
     public int deactivateItems(Connection conn, int id) throws SQLException
     {
         try (PreparedStatement p = conn.prepareStatement("UPDATE crm_opportunity_product SET status=0 WHERE opportunity_id=? AND status=1"))
@@ -247,7 +297,9 @@ public class OpportunityDao
         }
     }
 
-    /** 插入一条新明细。使用 INSERT ... SELECT 从产品表读取可信产品名称，并确保产品仍处于上架状态。 */
+    /**
+     * 插入一条新明细。使用 INSERT ... SELECT 从产品表读取可信产品名称，并确保产品仍处于上架状态。
+     */
     public int saveItem(Connection conn, int parentId, LineItem x) throws SQLException
     {
         try (PreparedStatement p = conn.prepareStatement("INSERT INTO" + " crm_opportunity_product(opportunity_id,product_id,product_name,quantity,unit_price,subtotal,status)" + " SELECT ?,p.id,p.product_name,?,?,?,1 FROM crm_product p WHERE p.id=? AND" + " p.status=1"))
@@ -261,7 +313,9 @@ public class OpportunityDao
         }
     }
 
-    /** 推进阶段，同时更新概率、业务状态和成交/丢单原因。 */
+    /**
+     * 推进阶段，同时更新概率、业务状态和成交/丢单原因。
+     */
     public int advance(
             Connection conn, int id, int stageId, int probability, String businessStatus, String reason) throws SQLException
     {
@@ -276,7 +330,9 @@ public class OpportunityDao
         }
     }
 
-    /** 逻辑删除商机。 */
+    /**
+     * 逻辑删除商机。
+     */
     public int updateStatus(Connection conn, int id, int status) throws SQLException
     {
         try (PreparedStatement p = conn.prepareStatement("UPDATE crm_business_opportunity SET status=?,update_time=NOW() WHERE id=?"))

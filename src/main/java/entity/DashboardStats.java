@@ -10,10 +10,14 @@ import java.math.BigDecimal;
  */
 public class DashboardStats
 {
-    /** 客户总数、本月新增、进行中商机、今日待办和预警客户数。 */
+    /**
+     * 客户总数、本月新增、进行中商机、今日待办和预警客户数。
+     */
     private int customerCount, monthCustomerCount, activeOpportunityCount, todayTodoCount, warningCount;
 
-    /** 进行中商机预计金额合计；初始化为 0，避免页面对 null 做金额格式化时报错。 */
+    /**
+     * 进行中商机预计金额合计；初始化为 0，避免页面对 null 做金额格式化时报错。
+     */
     private BigDecimal expectedAmount = BigDecimal.ZERO;
 
     // 标准 JavaBean getter/setter。

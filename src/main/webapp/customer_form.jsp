@@ -1,8 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8"%><%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%><!DOCTYPE html>
 <html lang="zh-CN">
-<head><jsp:include page="header.jsp" /></head>
-<body class="hold-transition sidebar-mini">
-	<div class="wrapper"><jsp:include page="navbar.jsp" /><jsp:include page="sidebar.jsp" /><div class="content-wrapper">
+	<head><jsp:include page="header.jsp" /></head>
+	<body class="hold-transition sidebar-mini">
+		<div class="wrapper"><jsp:include page="navbar.jsp" /><jsp:include page="sidebar.jsp" /><div class="content-wrapper">
 			<div class="content-header">
 				<div class="container-fluid">
 					<h1>${empty customer?'新增客户':'编辑客户'}</h1>
@@ -30,9 +30,9 @@
 										<label>企业规模</label>
 										<select name="scale" class="form-control">
 											<option value="">请选择</option>
-											<c:forEach items="${['50人以下','50-100人','100-500人','500-1000人','1000人以上']}" var="v">
+											<c:forTokens items="50人以下,50-100人,100-500人,500-1000人,1000人以上" delims="," var="v">
 												<option ${customer.scale==v?'selected':''}>${v}</option>
-											</c:forEach>
+											</c:forTokens>
 										</select>
 									</div>
 									<div class="form-group col-md-3">
@@ -80,9 +80,9 @@
 									<div class="form-group col-md-2">
 										<label>信用评级</label>
 										<select name="creditRating" class="form-control">
-											<c:forEach items="${['A','B','C']}" var="v">
+											<c:forTokens items="A,B,C" delims="," var="v">
 												<option ${customer.creditRating==v?'selected':''}>${v}</option>
-											</c:forEach>
+											</c:forTokens>
 										</select>
 									</div>
 									<div class="form-group col-12">
@@ -103,4 +103,4 @@
 				</div>
 			</section>
 		</div><jsp:include page="footer.jsp" /></div><jsp:include page="scripts.jsp" /></body>
-</html>
+	</html>

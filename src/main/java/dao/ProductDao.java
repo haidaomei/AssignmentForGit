@@ -1,8 +1,10 @@
 package dao;
 
 import entity.Product;
+
 import java.sql.*;
 import java.util.List;
+
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -16,10 +18,14 @@ import util.DbHelper;
  */
 public class ProductDao
 {
-    /** JdbcTemplate 用于无需手工事务的查询。 */
+    /**
+     * JdbcTemplate 用于无需手工事务的查询。
+     */
     private final JdbcTemplate tpl = DbHelper.getJdbcTemplate();
 
-    /** 把产品查询结果的一行映射成 Product 对象。 */
+    /**
+     * 把产品查询结果的一行映射成 Product 对象。
+     */
     private final RowMapper<Product> mapper = new RowMapper<Product>()
     {
         @Override
@@ -38,29 +44,39 @@ public class ProductDao
         }
     };
 
-    /** 列表、详情和下拉框共用的 SELECT 部分；DATE_FORMAT 直接生成页面需要的日期字符串。 */
+    /**
+     * 列表、详情和下拉框共用的 SELECT 部分；DATE_FORMAT 直接生成页面需要的日期字符串。
+     */
     private static final String SELECT = "SELECT p.*,DATE_FORMAT(p.create_time,'%Y-%m-%d') created FROM crm_product p ";
 
-    /** 统计名称模糊匹配的产品总数，用于计算分页页数。 */
+    /**
+     * 统计名称模糊匹配的产品总数，用于计算分页页数。
+     */
     public int count(String keyword)
     {
         Integer n = tpl.queryForObject("SELECT COUNT(*) FROM crm_product WHERE status=1 AND product_name LIKE ?", Integer.class, "%" + (keyword == null ? "" : keyword.trim()) + "%");
         return n == null ? 0 : n;
     }
 
-    /** 使用 LIMIT offset,size 查询某一页。offset 是跳过条数，不是页码。 */
+    /**
+     * 使用 LIMIT offset,size 查询某一页。offset 是跳过条数，不是页码。
+     */
     public List<Product> page(int offset, int size, String keyword)
     {
         return tpl.query(SELECT + "WHERE status=1 AND product_name LIKE ? ORDER BY create_time DESC LIMIT ?,?", mapper, "%" + (keyword == null ? "" : keyword) + "%", offset, size);
     }
 
-    /** 查询全部上架产品，主要供商机/合同动态明细下拉框使用。 */
+    /**
+     * 查询全部上架产品，主要供商机/合同动态明细下拉框使用。
+     */
     public List<Product> all()
     {
         return tpl.query(SELECT + "WHERE status=1 ORDER BY category,product_name", mapper);
     }
 
-    /** 按主键查询一个产品；查不到时返回 null，而不是让异常传到 Servlet。 */
+    /**
+     * 按主键查询一个产品；查不到时返回 null，而不是让异常传到 Servlet。
+     */
     public Product findById(int id)
     {
         try
@@ -73,7 +89,9 @@ public class ProductDao
         }
     }
 
-    /** 用 Service 传入的事务连接新增产品。 */
+    /**
+     * 用 Service 传入的事务连接新增产品。
+     */
     public int save(Connection conn, Product x) throws SQLException
     {
         try (PreparedStatement p = conn.prepareStatement("INSERT INTO crm_product(product_name,category,unit,unit_price,description,status)" + " VALUES(?,?,?,?,?,1)"))
@@ -83,7 +101,9 @@ public class ProductDao
         }
     }
 
-    /** 修改产品资料，只允许更新尚未逻辑删除的记录。 */
+    /**
+     * 修改产品资料，只允许更新尚未逻辑删除的记录。
+     */
     public int update(Connection conn, Product x) throws SQLException
     {
         try (PreparedStatement p = conn.prepareStatement("UPDATE crm_product SET" + " product_name=?,category=?,unit=?,unit_price=?,description=?,update_time=NOW()" + " WHERE id=? AND status=1"))
@@ -94,7 +114,9 @@ public class ProductDao
         }
     }
 
-    /** 集中绑定新增和修改共有的五个参数，避免两个方法重复写 setXxx。 */
+    /**
+     * 集中绑定新增和修改共有的五个参数，避免两个方法重复写 setXxx。
+     */
     private void bind(PreparedStatement p, Product x) throws SQLException
     {
         p.setString(1, x.getProductName());
@@ -104,7 +126,9 @@ public class ProductDao
         p.setString(5, x.getDescription());
     }
 
-    /** 逻辑上架/下架：只修改 status，永远不执行 DELETE FROM。 */
+    /**
+     * 逻辑上架/下架：只修改 status，永远不执行 DELETE FROM。
+     */
     public int updateStatus(Connection conn, int id, int status) throws SQLException
     {
         try (PreparedStatement p = conn.prepareStatement("UPDATE crm_product SET status=?,update_time=NOW() WHERE id=?"))

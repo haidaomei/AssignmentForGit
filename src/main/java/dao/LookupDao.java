@@ -1,9 +1,11 @@
 package dao;
 
 import entity.Lookup;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import util.DbHelper;
@@ -16,7 +18,9 @@ import util.DbHelper;
  */
 public class LookupDao
 {
-    /** 复用全局 JdbcTemplate 执行只读 SELECT。 */
+    /**
+     * 复用全局 JdbcTemplate 执行只读 SELECT。
+     */
     private final JdbcTemplate tpl = DbHelper.getJdbcTemplate();
 
     /**
@@ -39,19 +43,25 @@ public class LookupDao
         };
     }
 
-    /** 按 sort_order 查询客户等级，保证 VIP、重点、普通、潜在按规定顺序显示。 */
+    /**
+     * 按 sort_order 查询客户等级，保证 VIP、重点、普通、潜在按规定顺序显示。
+     */
     public List<Lookup> levels()
     {
         return tpl.query("SELECT id,level_name,level_code FROM crm_customer_level ORDER BY sort_order", mapper("level_name", "level_code"));
     }
 
-    /** 查询全部线索来源，供客户表单下拉框使用。 */
+    /**
+     * 查询全部线索来源，供客户表单下拉框使用。
+     */
     public List<Lookup> sources()
     {
         return tpl.query("SELECT id,source_name,source_code FROM crm_lead_source ORDER BY id", mapper("source_name", "source_code"));
     }
 
-    /** 查询商机阶段；除名称编码外，还读取阶段顺序和默认成交概率。 */
+    /**
+     * 查询商机阶段；除名称编码外，还读取阶段顺序和默认成交概率。
+     */
     public List<Lookup> stages()
     {
         return tpl.query("SELECT id,stage_name,stage_code,sort_order,win_probability FROM crm_opportunity_stage" + " ORDER BY sort_order", new RowMapper<Lookup>()

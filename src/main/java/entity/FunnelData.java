@@ -8,13 +8,19 @@ import java.math.BigDecimal;
  */
 public class FunnelData
 {
-    /** 阶段名称。 */
+    /**
+     * 阶段名称。
+     */
     private String name;
 
-    /** 此阶段的有效商机数量。 */
+    /**
+     * 此阶段的有效商机数量。
+     */
     private int value;
 
-    /** 此阶段预计金额合计。 */
+    /**
+     * 此阶段预计金额合计。
+     */
     private BigDecimal amount;
 
     // 标准 JavaBean getter/setter。

@@ -13,19 +13,29 @@ import java.util.List;
  */
 public class Contract
 {
-    /** 主键、关联商机、关联客户、创建人和逻辑状态。 */
+    /**
+     * 主键、关联商机、关联客户、创建人和逻辑状态。
+     */
     private Integer id, opportunityId, customerId, createUserId, status;
 
-    /** 是否在未来 30 天内到期；该值用于列表高亮，不是数据库原始列。 */
+    /**
+     * 是否在未来 30 天内到期；该值用于列表高亮，不是数据库原始列。
+     */
     private boolean expiring;
 
-    /** 合同编号、名称、关联展示名称、日期、条款、业务状态和备注。 */
+    /**
+     * 合同编号、名称、关联展示名称、日期、条款、业务状态和备注。
+     */
     private String contractNo, contractName, opportunityTitle, customerName, signedDate, startDate, endDate, paymentTerms, businessStatus, attachmentPath, createUserName, remarks, createTime;
 
-    /** 所有有效明细行的小计之和。 */
+    /**
+     * 所有有效明细行的小计之和。
+     */
     private BigDecimal contractAmount;
 
-    /** 合同产品明细集合，默认创建空列表以避免空指针。 */
+    /**
+     * 合同产品明细集合，默认创建空列表以避免空指针。
+     */
     private List<LineItem> items = new ArrayList<>();
 
     // 标准 JavaBean getter/setter。

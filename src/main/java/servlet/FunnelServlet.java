@@ -1,17 +1,23 @@
 package servlet;
 
 import com.google.gson.Gson;
+
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
+
 import service.DashboardService;
 
-/** 销售漏斗 Servlet，既可返回完整页面，也可作为 JSON 数据接口。 */
+/**
+ * 销售漏斗 Servlet，既可返回完整页面，也可作为 JSON 数据接口。
+ */
 @WebServlet("/funnel")
 public class FunnelServlet extends BaseServlet
 {
-    /** 提供按商机阶段聚合的数量与金额。 */
+    /**
+     * 提供按商机阶段聚合的数量与金额。
+     */
     private final DashboardService service = new DashboardService();
 
     @Override

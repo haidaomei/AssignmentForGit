@@ -1,12 +1,14 @@
 package servlet;
 
 import entity.*;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
+
 import service.*;
 
 /**
@@ -75,7 +77,9 @@ public class ContractServlet extends BaseServlet
         }
         boolean ok;
         if ("/delete".equals(req.getPathInfo()))
+        {
             ok = service.delete(intVal(req.getParameter("id"), 0));
+        }
         else
         {
             Contract x = read(req);
@@ -89,10 +93,14 @@ public class ContractServlet extends BaseServlet
     {
         Integer id = integer(req.getParameter("opportunityId"));
         if (id == null)
+        {
             return null;
+        }
         Opportunity o = opportunityService.get(id, user(req));
         if (o == null || !"已成交".equals(o.getBusinessStatus()) || service.existsForOpportunity(id))
+        {
             return null;
+        }
         Contract x = new Contract();
         x.setOpportunityId(id);
         x.setOpportunityTitle(o.getTitle());
@@ -128,12 +136,16 @@ public class ContractServlet extends BaseServlet
         String[] prices = r.getParameterValues("items[][unitPrice]");
         List<LineItem> list = new ArrayList<>();
         if (products == null)
+        {
             return list;
+        }
         for (int i = 0; i < products.length; i++)
         {
             Integer pid = integer(products[i]);
             if (pid == null)
+            {
                 continue;
+            }
             LineItem x = new LineItem();
             x.setProductId(pid);
             x.setQuantity(intVal(quantities != null && i < quantities.length ? quantities[i] : null, 1));
@@ -146,16 +158,26 @@ public class ContractServlet extends BaseServlet
     private boolean allowed(HttpServletRequest req, Integer cid)
     {
         if (cid == null)
+        {
             return false;
+        }
         if (!user(req).isSales())
+        {
             return true;
+        }
         for (Customer c : customerService.all(user(req)))
+        {
             if (c.getId().equals(cid))
+            {
                 return true;
+            }
+        }
         return false;
     }
 }
-/** GET 处理分页列表、详情和新增/编辑表单。 */
+/**
+ * GET 处理分页列表、详情和新增/编辑表单。
+ */
 // 列表支持按合同业务状态筛选，每页 10 条。
 // 详情页按数据权限查询合同与产品明细。
 // 合同不存在或当前用户无权查看时返回 404。

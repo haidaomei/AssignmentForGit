@@ -4,6 +4,7 @@ import dao.DashboardDao;
 import entity.DashboardStats;
 import entity.FunnelData;
 import entity.User;
+
 import java.util.List;
 
 /**
@@ -14,7 +15,9 @@ import java.util.List;
  */
 public class DashboardService
 {
-    /** 仪表盘 DAO，封装各类统计 SQL。 */
+    /**
+     * 仪表盘 DAO，封装各类统计 SQL。
+     */
     private final DashboardDao dao = new DashboardDao();
 
     /**

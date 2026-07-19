@@ -1,6 +1,7 @@
 package servlet;
 
 import entity.User;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import javax.servlet.ServletException;
@@ -18,7 +19,9 @@ import javax.servlet.http.HttpServletResponse;
  */
 public abstract class BaseServlet extends HttpServlet
 {
-    /** 统一请求和响应为 UTF-8，防止中文表单参数或页面输出出现乱码。 */
+    /**
+     * 统一请求和响应为 UTF-8，防止中文表单参数或页面输出出现乱码。
+     */
     protected void utf8(HttpServletRequest req, HttpServletResponse resp) throws java.io.UnsupportedEncodingException
     {
         // 必须在第一次读取 request 参数之前设置请求编码。
@@ -28,7 +31,9 @@ public abstract class BaseServlet extends HttpServlet
         resp.setContentType("text/html;charset=UTF-8");
     }
 
-    /** 把字符串安全转成基本类型 int；为空或格式错误时返回调用者给定的默认值。 */
+    /**
+     * 把字符串安全转成基本类型 int；为空或格式错误时返回调用者给定的默认值。
+     */
     protected int intVal(String value, int fallback)
     {
         try
@@ -41,7 +46,9 @@ public abstract class BaseServlet extends HttpServlet
         }
     }
 
-    /** 把字符串安全转成 Integer；返回 null 可表达“表单没有选择这一项”。 */
+    /**
+     * 把字符串安全转成 Integer；返回 null 可表达“表单没有选择这一项”。
+     */
     protected Integer integer(String value)
     {
         try
@@ -54,7 +61,9 @@ public abstract class BaseServlet extends HttpServlet
         }
     }
 
-    /** 把金额参数转换为精确的 BigDecimal，非法金额按 0 处理。 */
+    /**
+     * 把金额参数转换为精确的 BigDecimal，非法金额按 0 处理。
+     */
     protected BigDecimal decimal(String value)
     {
         try
@@ -80,26 +89,34 @@ public abstract class BaseServlet extends HttpServlet
         return value == null ? "" : value.trim();
     }
 
-    /** 从 Session 中取得登录时保存的用户对象。登录过滤器保证业务请求中它不为 null。 */
+    /**
+     * 从 Session 中取得登录时保存的用户对象。登录过滤器保证业务请求中它不为 null。
+     */
     protected User user(HttpServletRequest req)
     {
         return (User) req.getSession().getAttribute("user");
     }
 
-    /** 保存一次性提示消息。消息放在 Session 是因为写操作完成后会 redirect，原 request 已经失效。 */
+    /**
+     * 保存一次性提示消息。消息放在 Session 是因为写操作完成后会 redirect，原 request 已经失效。
+     */
     protected void flash(HttpServletRequest req, boolean ok, String success)
     {
         req.getSession().setAttribute("flashType", ok ? "success" : "error");
         req.getSession().setAttribute("flashMsg", ok ? success : "操作失败，请检查输入或数据关联");
     }
 
-    /** 服务端转发到 JSP：地址栏不变，当前 request 中的数据可以继续被 JSP 读取。 */
+    /**
+     * 服务端转发到 JSP：地址栏不变，当前 request 中的数据可以继续被 JSP 读取。
+     */
     protected void forward(HttpServletRequest req, HttpServletResponse resp, String jsp) throws ServletException, IOException
     {
         req.getRequestDispatcher(jsp).forward(req, resp);
     }
 
-    /** 客户端重定向到新的业务 URL，用于写操作后的 PRG（Post/Redirect/Get）模式。 */
+    /**
+     * 客户端重定向到新的业务 URL，用于写操作后的 PRG（Post/Redirect/Get）模式。
+     */
     protected void redirect(HttpServletRequest req, HttpServletResponse resp, String path) throws IOException
     {
         // contextPath 可能是 /crm-pro；拼上它后项目部署到任意上下文都不会产生错误链接。

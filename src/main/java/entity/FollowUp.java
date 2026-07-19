@@ -9,13 +9,19 @@ package entity;
  */
 public class FollowUp
 {
-    /** 主键和关联外键、是否已提醒、逻辑状态。 */
+    /**
+     * 主键和关联外键、是否已提醒、逻辑状态。
+     */
     private Integer id, customerId, opportunityId, contactId, followUserId, isReminded, status;
 
-    /** 由 SQL 根据 next_follow_time 和当前时间计算，true 时列表行标黄。 */
+    /**
+     * 由 SQL 根据 next_follow_time 和当前时间计算，true 时列表行标黄。
+     */
     private boolean overdue;
 
-    /** 页面展示和跟进业务所需的文字、日期时间字段。 */
+    /**
+     * 页面展示和跟进业务所需的文字、日期时间字段。
+     */
     private String customerName, opportunityTitle, contactName, followUserName, followType, followContent, customerFeedback, nextPlan, nextFollowTime, followTime, createTime;
 
     // 标准 JavaBean getter/setter。

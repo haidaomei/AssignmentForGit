@@ -1,6 +1,7 @@
 package servlet;
 
 import entity.User;
+
 import java.io.IOException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -10,6 +11,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import service.LoginService;
 
 /**
@@ -22,10 +24,14 @@ import service.LoginService;
 @WebServlet("/login")
 public class LoginServlet extends BaseServlet
 {
-    /** 课件要求的 Cookie 存活时间：7 天，单位为秒。 */
+    /**
+     * 课件要求的 Cookie 存活时间：7 天，单位为秒。
+     */
     private static final int REMEMBER_SECONDS = 7 * 24 * 60 * 60;
 
-    /** 登录业务层，负责根据用户名和密码查询有效用户。 */
+    /**
+     * 登录业务层，负责根据用户名和密码查询有效用户。
+     */
     private final LoginService service = new LoginService();
 
     /**
@@ -51,7 +57,9 @@ public class LoginServlet extends BaseServlet
         forward(req, resp, "/login.jsp");
     }
 
-    /** 处理登录表单提交。 */
+    /**
+     * 处理登录表单提交。
+     */
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException
     {
@@ -97,7 +105,9 @@ public class LoginServlet extends BaseServlet
         redirect(req, resp, "/dashboard");
     }
 
-    /** 登录失败时准备输入框回显数据。 */
+    /**
+     * 登录失败时准备输入框回显数据。
+     */
     private void prepareFailedForm(HttpServletRequest req, String username, String password)
     {
         req.setAttribute("rememberedUsername", username);
@@ -124,12 +134,16 @@ public class LoginServlet extends BaseServlet
         resp.addCookie(cookie);
     }
 
-    /** 遍历浏览器携带的 Cookie，找到指定名称后用 UTF-8 解码。 */
+    /**
+     * 遍历浏览器携带的 Cookie，找到指定名称后用 UTF-8 解码。
+     */
     private String readCookie(HttpServletRequest req, String name)
     {
         Cookie[] cookies = req.getCookies();
         if (cookies == null)
+        {
             return null;
+        }
         for (Cookie cookie : cookies)
         {
             if (name.equals(cookie.getName()))
@@ -150,7 +164,9 @@ public class LoginServlet extends BaseServlet
         return null;
     }
 
-    /** 项目部署在根路径时使用 / ，否则使用当前 Tomcat 上下文路径。 */
+    /**
+     * 项目部署在根路径时使用 / ，否则使用当前 Tomcat 上下文路径。
+     */
     private String cookiePath(HttpServletRequest req)
     {
         return req.getContextPath().isEmpty() ? "/" : req.getContextPath();
